@@ -1,7 +1,12 @@
 package kr.ac.knu.comit;
 
+import kr.ac.knu.comit.comment.service.CommentQueryService;
+import kr.ac.knu.comit.comment.service.CommentService;
+import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.post.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(properties = {
         "SPRING_PORT=0",
@@ -16,6 +21,18 @@ import org.springframework.boot.test.context.SpringBootTest;
                 + "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"
 })
 class ComitApplicationTests {
+
+    @MockitoBean
+    MemberService memberService;
+
+    @MockitoBean
+    PostService postService;
+
+    @MockitoBean
+    CommentService commentService;
+
+    @MockitoBean
+    CommentQueryService commentQueryService;
 
     @Test
     void contextLoads() {

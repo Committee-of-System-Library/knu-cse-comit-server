@@ -1,0 +1,29 @@
+package kr.ac.knu.comit.post.dto;
+
+import kr.ac.knu.comit.post.domain.Post;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * No-offset cursor 페이지네이션 응답.
+ *
+ * 클라이언트는 nextCursorId 를 다음 요청의 cursor 파라미터로 전달한다.
+ * nextCursorId == null 이면 마지막 페이지.
+ */
+public record PostCursorPageResponse(
+        List<PostSummaryResponse> posts,
+        Long nextCursorId,
+        boolean hasNext
+) {
+    public static PostCursorPageResponse of(List<Post> posts, int requestedSize, Map<Long, Integer> commentCounts) {
+        boolean hasNext = posts.size() == requestedSize;
+        Long nextCursorId = hasNext ? posts.get(posts.size() - 1).getId() : null;
+        return new PostCursorPageResponse(
+                posts.stream()
+                        .map(post -> PostSummaryResponse.from(post, commentCounts.getOrDefault(post.getId(), 0)))
+                        .toList(),
+                nextCursorId,
+                hasNext
+        );
+    }
+}
