@@ -26,6 +26,7 @@ jobs:
 
       - name: Verify generated docs are committed
         run: |
+          git diff -- docs/api
           if ! git diff --exit-code -- docs/api; then
             echo "::error::API 문서가 업데이트되지 않았습니다."
             echo "::error::로컬에서 ./gradlew generateApiDocs 실행 후 커밋하세요."
