@@ -41,9 +41,6 @@ spring:
         format_sql: false
         highlight_sql: false
         use_sql_comments: false
-  flyway:
-    enabled: false
-    baseline-on-migrate: false
   threads:
     virtual:
       enabled: ${VIRTUAL_THREADS_ENABLED:false}
@@ -56,17 +53,6 @@ spring:
   devtools:
     restart:
       enabled: false
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      timeout: 3000ms
-      lettuce:
-        pool:
-          max-active: ${REDIS_POOL_MAX_ACTIVE:10}
-          max-idle: ${REDIS_POOL_MAX_IDLE:10}
-          min-idle: ${REDIS_POOL_MIN_IDLE:2}
-          max-wait: ${REDIS_POOL_MAX_WAIT:1000ms}
 
 logging:
   file:
