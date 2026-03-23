@@ -19,17 +19,15 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    // ── 조회 ─────────────────────────────────────────────────
-
     public MemberProfileResponse getMyProfile(Long memberId) {
         return MemberProfileResponse.from(findMemberOrThrow(memberId));
     }
 
-    // ── 쓰기 ─────────────────────────────────────────────────
-
     /**
-     * SSO 최초 로그인 시 member 생성 or 기존 member 반환.
-     * Auth Filter에서 호출.
+     * 인증된 사용자의 로컬 회원을 찾고, 첫 로그인이라면 새로 만든다.
+     *
+     * @implNote 현재 헤더 기반 인증 흐름을 member 도메인과 연결하는 동안
+     * 인증 필터가 이 메서드를 호출한다.
      */
     @Transactional
     public Member findOrCreateBySso(MemberPrincipal principal) {
@@ -53,8 +51,6 @@ public class MemberService {
     public void updateStudentNumberVisibility(Long memberId, UpdateStudentNumberVisibilityRequest request) {
         findMemberOrThrow(memberId).updateStudentNumberVisibility(request.visible());
     }
-
-    // ── 내부 헬퍼 ────────────────────────────────────────────
 
     public Member findMemberOrThrow(Long memberId) {
         return memberRepository.findById(memberId)

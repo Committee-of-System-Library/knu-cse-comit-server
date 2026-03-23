@@ -26,15 +26,12 @@ public class PostService {
     private final MemberService memberService;
     private final CommentQueryService commentQueryService;
 
-    // ── 조회 ──────────────────────────────────────────────────────────────────
-
     /**
-     * No-offset cursor 페이지네이션.
+     * cursor 기반으로 게시글 목록을 조회한다.
      *
-     * cursorId == null → 첫 페이지 (최신순 상위 N개)
-     * cursorId != null → 해당 id 미만의 다음 페이지
-     *
-     * JOIN FETCH로 member를 함께 로드 → 작성자 닉네임 N+1 없음.
+     * @apiNote {@code cursor}가 {@code null}이면 첫 페이지를 조회한다.
+     * @implNote 리포지토리는 작성자 정보를 함께 가져오고, 댓글 수는 별도로 채워
+     * 서비스 메서드가 위에서 아래로 읽히는 흐름을 유지한다.
      */
     public PostCursorPageResponse getPosts(BoardType boardType, Long cursorId, int size) {
         int pageSize = Math.min(size, DEFAULT_PAGE_SIZE);
@@ -56,8 +53,6 @@ public class PostService {
         boolean likedByMe = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
         return PostDetailResponse.of(post, likedByMe);
     }
-
-    // ── 쓰기 ──────────────────────────────────────────────────────────────────
 
     @Transactional
     public Long createPost(Long memberId, CreatePostRequest request) {
@@ -84,20 +79,12 @@ public class PostService {
         post.delete();
     }
 
-    // ── 좋아요 토글 ─────────────────────────────────────────────────────────────
-    //
-    // [동시성 설계]
-    // 1. INSERT IGNORE (nativeQuery) → DB UNIQUE(post_id, member_id) 제약으로 원자적 삽입
-    //    반환값 1 = 삽입 성공(좋아요), 0 = 이미 존재(좋아요 취소)
-    //
-    // 2. 카운터 증감은 JPQL UPDATE "likeCount = likeCount ± 1" → DB 원자적 연산
-    //    애플리케이션 레벨 read-modify-write 없음 → lost update 불가능
-    //
-    // 동시에 두 요청이 INSERT IGNORE를 실행하면:
-    //   - 첫 번째: 삽입 성공(1) → increment
-    //   - 두 번째: 삽입 무시(0) → delete + decrement
-    //   → 결과적으로 좋아요 없음 (정합성 유지)
-
+    /**
+     * 요청한 사용자의 게시글 좋아요 상태를 토글한다.
+     *
+     * @implNote 현재 구현은 DB 유니크 키 {@code (post_id, member_id)}와
+     * 원자적 카운터 업데이트에 기대어 메모리 기반 동기화를 피한다.
+     */
     @Transactional
     public LikeToggleResponse toggleLike(Long memberId, Long postId) {
         findPostOrThrow(postId);
@@ -113,8 +100,6 @@ public class PostService {
             return LikeToggleResponse.unlikedState();
         }
     }
-
-    // ── 내부 헬퍼 (private) ───────────────────────────────────────────────────
 
     public Post getActivePostOrThrow(Long postId) {
         return findPostOrThrow(postId);

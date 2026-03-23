@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * No-offset cursor 페이지네이션 응답.
+ * no-offset cursor 페이지네이션 응답.
  *
- * 클라이언트는 nextCursorId 를 다음 요청의 cursor 파라미터로 전달한다.
- * nextCursorId == null 이면 마지막 페이지.
+ * 클라이언트는 {@code nextCursorId}를 다음 요청의 {@code cursor} 파라미터로 전달한다.
+ * {@code nextCursorId == null}이면 마지막 페이지다.
  */
 public record PostCursorPageResponse(
         List<PostSummaryResponse> posts,

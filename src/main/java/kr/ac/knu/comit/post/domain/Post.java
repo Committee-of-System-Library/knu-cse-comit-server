@@ -34,7 +34,9 @@ public class Post {
     @Column(nullable = false)
     private int likeCount = 0;
 
-    // 태그는 Post 생명주기에 종속 → CascadeType.ALL + orphanRemoval
+    /**
+     * 태그는 게시글 생명주기를 따르며, 수정 시 전체 교체된다.
+     */
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostTag> tags = new ArrayList<>();
 
@@ -47,8 +49,9 @@ public class Post {
     protected Post() {
     }
 
-    // ── 정적 팩토리 ──────────────────────────────────────────────────────────
-
+    /**
+     * 초기 태그를 포함한 새 활성 게시글을 만든다.
+     */
     public static Post create(Member author, BoardType boardType, String title, String content,
                               List<String> tagNames) {
         validateTitle(title);
@@ -66,8 +69,11 @@ public class Post {
         return post;
     }
 
-    // ── 상태 변경 ─────────────────────────────────────────────────────────────
-
+    /**
+     * 게시글의 수정 가능한 상태를 전체 교체한다.
+     *
+     * @implNote 태그는 통째로 교체한다. 기존 row 정리는 orphan removal에 맡긴다.
+     */
     public void update(String title, String content, List<String> tagNames) {
         validateTitle(title);
         validateContent(content);
@@ -76,8 +82,6 @@ public class Post {
         this.title = title;
         this.content = content;
         this.updatedAt = LocalDateTime.now();
-
-        // 태그 전체 교체: orphanRemoval이 삭제 처리
         this.tags.clear();
         tagNames.forEach(name -> this.tags.add(PostTag.of(this, name)));
     }
@@ -86,8 +90,9 @@ public class Post {
         this.deletedAt = LocalDateTime.now();
     }
 
-    // ── 도메인 판단 ───────────────────────────────────────────────────────────
-
+    /**
+     * 주어진 회원이 이 게시글의 작성자인지 확인한다.
+     */
     public boolean isWrittenBy(Long memberId) {
         return this.member.getId().equals(memberId);
     }
@@ -131,8 +136,6 @@ public class Post {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-
-    // ── 도메인 규칙 검증 (private) ────────────────────────────────────────────
 
     private static void validateTitle(String title) {
         if (title == null || title.isBlank() || title.length() > 255) {

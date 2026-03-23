@@ -7,6 +7,12 @@ import kr.ac.knu.comit.post.domain.BoardType;
 
 import java.util.List;
 
+/**
+ * 게시글 작성 요청 본문.
+ *
+ * @implNote Bean Validation은 형태 수준의 제약을 확인하고, 태그에 대한 최종
+ * 도메인 규칙은 {@code Post} aggregate가 강제한다.
+ */
 public record CreatePostRequest(
         @NotNull(message = "게시판 유형을 선택해주세요.")
         BoardType boardType,
@@ -18,10 +24,12 @@ public record CreatePostRequest(
         @NotBlank(message = "내용을 입력해주세요.")
         String content,
 
-        // Bean Validation은 형식만. 개수·길이 검증은 도메인(Post.create)에서 수행.
         @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
         List<String> tags
 ) {
+    /**
+     * 누락된 태그 목록을 빈 리스트로 정규화해 이후 도메인 로직이 단순해지게 한다.
+     */
     public List<String> tags() {
         return tags == null ? List.of() : tags;
     }

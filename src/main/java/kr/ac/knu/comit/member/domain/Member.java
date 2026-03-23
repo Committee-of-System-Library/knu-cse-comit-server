@@ -34,11 +34,10 @@ public class Member {
     protected Member() {
     }
 
-    // ── 정적 팩토리 ─────────────────────────────────────────
-
     /**
-     * SSO 최초 로그인 시 member 생성.
-     * 닉네임 초기값 = SSO name (이후 변경 가능).
+     * SSO 최초 인증 성공 시 회원을 생성한다.
+     *
+     * @apiNote 초기 닉네임은 SSO 표시 이름을 사용하며, 이후 사용자가 변경할 수 있다.
      */
     public static Member create(String ssoSub, String initialNickname, String studentNumber) {
         validateNickname(initialNickname);
@@ -50,8 +49,6 @@ public class Member {
         member.createdAt = LocalDateTime.now();
         return member;
     }
-
-    // ── 상태 변경 ────────────────────────────────────────────
 
     public void updateNickname(String nickname) {
         validateNickname(nickname);
@@ -93,8 +90,6 @@ public class Member {
     public boolean isStudentNumberVisible() {
         return studentNumberVisible;
     }
-
-    // ── 도메인 규칙 검증 ─────────────────────────────────────
 
     private static void validateNickname(String nickname) {
         if (nickname == null || nickname.isBlank() || nickname.length() > 50) {

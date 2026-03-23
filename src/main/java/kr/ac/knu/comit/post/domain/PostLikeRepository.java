@@ -8,14 +8,11 @@ import org.springframework.data.repository.query.Param;
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     /**
-     * INSERT IGNORE: DB UNIQUE(post_id, member_id) 제약을 활용한 원자적 삽입.
+     * 중복 예외를 던지지 않고 좋아요 레코드 생성을 시도한다.
      *
-     * - 반환값 1 → 삽입 성공 (좋아요)
-     * - 반환값 0 → 이미 존재 (좋아요 취소 처리)
-     *
-     * DataIntegrityViolationException 대신 INSERT IGNORE를 쓰는 이유:
-     * 예외 발생 시 트랜잭션이 롤백 마킹되어 추가 작업이 불가능하지만,
-     * INSERT IGNORE는 정상 흐름 안에서 결과값으로만 판단할 수 있다.
+     * @return 좋아요가 새로 생성되면 {@code 1}, 이미 존재하면 {@code 0}
+     * @implNote 중복 키 예외에 의존하면 트랜잭션이 롤백 상태가 되므로,
+     * 현재 구현은 {@code INSERT IGNORE}로 결과값만 판단한다.
      */
     @Modifying(clearAutomatically = true)
     @Query(

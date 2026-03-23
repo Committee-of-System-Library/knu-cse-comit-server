@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 목록 조회 전용 DTO. 본문(content)은 포함하지 않아 페이로드를 최소화한다.
+ * 목록 조회 전용 DTO. 본문인 {@code content}는 제외해 페이로드를 최소화한다.
  */
 public record PostSummaryResponse(
         Long id,

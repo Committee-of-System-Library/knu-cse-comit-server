@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Controller 파라미터에 붙이면 현재 인증된 회원의 {@link MemberPrincipal}이 주입된다.
+ * 컨트롤러 파라미터에 붙이면 현재 인증된 회원의 {@link MemberPrincipal}이 주입된다.
  *
  * <pre>
  * {@code

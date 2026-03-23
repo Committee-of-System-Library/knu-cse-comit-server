@@ -10,10 +10,11 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * @AuthenticatedMember 파라미터 → MemberPrincipal 주입
+ * {@link AuthenticatedMember} 파라미터를 현재 {@link MemberPrincipal}로 변환한다.
  *
- * TODO: KNU CSE SSO Starter 연동 후 SecurityContextHolder에서 실제 JWT claims 추출로 교체.
- *       현재는 Request Attribute 기반 구현 (SSO Filter가 "memberPrincipal" attribute를 세팅한다고 가정).
+ * @implNote 현재 구현은 {@link MemberAuthenticationFilter}가 넣어 둔 요청 속성을
+ * 읽는다. 실제 SSO starter가 보안 컨텍스트로 클레임을 노출하면
+ * 그 방식으로 교체한다.
  */
 @Component
 public class MemberArgumentResolver implements HandlerMethodArgumentResolver {

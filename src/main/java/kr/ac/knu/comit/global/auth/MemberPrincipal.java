@@ -1,20 +1,14 @@
 package kr.ac.knu.comit.global.auth;
 
 /**
- * KNU CSE SSO JWT Claims → 서버 인증 컨텍스트
+ * KNU CSE SSO claim으로부터 만든 인증 컨텍스트.
  *
- * SSO JWT Claims:
- *   sub            - SSO 식별자 (우리 DB member.sso_sub 과 매핑)
- *   student_number - 학번
- *   name           - 실명
- *   email          - 학교 이메일
- *   major          - 전공
- *   user_type      - CSE_STUDENT | KNU_OTHER_DEPT | EXTERNAL
- *   role           - ADMIN | STUDENT | null
+ * @apiNote {@code memberId}는 SSO 사용자를 우리 서비스 회원과 매칭하거나
+ * 최초 생성한 뒤 확정되는 로컬 DB 식별자다.
  */
 public record MemberPrincipal(
-        Long memberId,       // 우리 DB PK (최초 로그인 시 생성 후 세팅)
-        String ssoSub,       // SSO sub claim
+        Long memberId,
+        String ssoSub,
         String name,
         String email,
         String studentNumber,
