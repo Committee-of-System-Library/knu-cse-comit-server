@@ -10,7 +10,7 @@
 
 ## 파일 네이밍
 
-```
+```text
 {기능명}.md
 예) payment-confirm.md, member-auth.md
 ```

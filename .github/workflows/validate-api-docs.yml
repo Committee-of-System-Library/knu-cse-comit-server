@@ -26,11 +26,10 @@ jobs:
 
       - name: Verify generated docs are committed
         run: |
-          echo "=== git tracked files in docs/api ==="
-          git ls-files docs/api/
-          echo "=== git diff ==="
-          git diff -- docs/api
-          if ! git diff --exit-code -- docs/api; then
+          status_output="$(git status --porcelain -- docs/api)"
+          if [[ -n "$status_output" ]]; then
+            echo "=== git status --porcelain -- docs/api ==="
+            echo "$status_output"
             echo "::error::API 문서가 업데이트되지 않았습니다."
             echo "::error::로컬에서 ./gradlew generateApiDocs 실행 후 커밋하세요."
             exit 1

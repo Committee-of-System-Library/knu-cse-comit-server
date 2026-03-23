@@ -29,7 +29,7 @@ AI 에이전트(Claude, Cursor, Copilot 등)가 이 프로젝트에서 일관된
 
 ## 패키지 구조 원칙
 
-```
+```text
 kr.ac.knu.comit/
 ├── global/               # 공통 예외, 응답 형식 등
 │   └── exception/

@@ -32,7 +32,7 @@ public interface PaymentControllerApi {
                             {
                               "orderId": "ORDER-001",
                               "status": "DONE",
-                              "approvedAt": "2024-01-01T12:00:00",
+                              "approvedAt": "2024-01-01T12:00:00Z",
                               "historyIncluded": true
                             }
                             """
@@ -64,7 +64,7 @@ public interface PaymentControllerApi {
                     response = """
                             {
                               "status": "DONE",
-                              "approvedAt": "2024-01-01T12:00:00",
+                              "approvedAt": "2024-01-01T12:00:00Z",
                               "orderId": "ORDER-001",
                               "amount": 15000
                             }

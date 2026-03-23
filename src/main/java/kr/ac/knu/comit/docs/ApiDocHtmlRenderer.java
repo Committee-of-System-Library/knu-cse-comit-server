@@ -116,13 +116,23 @@ final class ApiDocHtmlRenderer {
                         docs.forEach((doc) => {
                             const link = document.createElement('a');
                             link.className = 'card';
-                            link.href = doc.href;
-                            link.innerHTML = `
-                                <span class="pill">${doc.sectionPath || 'root'}</span>
-                                <h2>${doc.title}</h2>
-                                <p>${doc.summary}</p>
-                                <div class="meta">${doc.endpointCount} endpoint(s)</div>
-                            `;
+                            link.href = typeof doc.href === 'string' ? doc.href : '#';
+
+                            const pill = document.createElement('span');
+                            pill.className = 'pill';
+                            pill.textContent = doc.sectionPath || 'root';
+
+                            const title = document.createElement('h2');
+                            title.textContent = doc.title || '';
+
+                            const summary = document.createElement('p');
+                            summary.textContent = doc.summary || '';
+
+                            const meta = document.createElement('div');
+                            meta.className = 'meta';
+                            meta.textContent = `${doc.endpointCount ?? 0} endpoint(s)`;
+
+                            link.append(pill, title, summary, meta);
                             grid.appendChild(link);
                         });
                     </script>
@@ -607,6 +617,7 @@ final class ApiDocHtmlRenderer {
         return value == null ? "" : value
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
+                .replace("\r", "\\r")
                 .replace("\n", "\\n");
     }
 }

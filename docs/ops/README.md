@@ -11,7 +11,7 @@
 
 ## 파일 네이밍
 
-```
+```text
 deploy.md          ← 배포 절차
 env.md             ← 환경변수 목록
 checklist.md       ← 운영 체크리스트

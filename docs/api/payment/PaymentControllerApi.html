@@ -319,7 +319,7 @@
 </tr>
 <tr>
     <td><code>approvedAt</code></td>
-    <td><span class="type-chip type-datetime">LocalDateTime</span></td>
+    <td><span class="type-chip type-datetime">OffsetDateTime</span></td>
     <td><span class="badge-optional">optional</span></td>
     <td>결제 승인 시각</td>
 </tr>
@@ -351,7 +351,7 @@
     <h3>응답 예시</h3>
     <pre><code>{
   &quot;status&quot; : &quot;DONE&quot;,
-  &quot;approvedAt&quot; : &quot;2024-01-01T12:00:00&quot;,
+  &quot;approvedAt&quot; : &quot;2024-01-01T12:00:00Z&quot;,
   &quot;orderId&quot; : &quot;ORDER-001&quot;,
   &quot;amount&quot; : 15000
 }</code></pre>
@@ -418,7 +418,7 @@
     </thead>
     <tbody><tr>
     <td><code>approvedAt</code></td>
-    <td><span class="type-chip type-datetime">LocalDateTime</span></td>
+    <td><span class="type-chip type-datetime">OffsetDateTime</span></td>
     <td><span class="badge-optional">optional</span></td>
     <td>결제 승인 시각</td>
 </tr>
@@ -449,7 +449,7 @@
     <pre><code>{
   &quot;orderId&quot; : &quot;ORDER-001&quot;,
   &quot;status&quot; : &quot;DONE&quot;,
-  &quot;approvedAt&quot; : &quot;2024-01-01T12:00:00&quot;,
+  &quot;approvedAt&quot; : &quot;2024-01-01T12:00:00Z&quot;,
   &quot;historyIncluded&quot; : true
 }</code></pre>
 </section>
