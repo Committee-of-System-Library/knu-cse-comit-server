@@ -7,6 +7,8 @@
 | 파일 | 내용 |
 |---|---|
 | `git-convention.md` | 브랜치·커밋·PR 규칙 |
+| `api-contract.md` | API 계약 인터페이스 사용법과 작성 규칙 |
+| `api-doc-generator-flow.md` | 문서 생성기 내부 동작 과정과 확장 포인트 |
 
 ## 작성 원칙
 
