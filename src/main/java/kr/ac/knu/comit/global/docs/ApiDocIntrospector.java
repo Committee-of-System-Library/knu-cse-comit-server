@@ -1,4 +1,4 @@
-package kr.ac.knu.comit.docs;
+package kr.ac.knu.comit.global.docs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -30,10 +29,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import kr.ac.knu.comit.docs.annotation.ApiContract;
-import kr.ac.knu.comit.docs.annotation.ApiDoc;
-import kr.ac.knu.comit.docs.annotation.Example;
-import kr.ac.knu.comit.docs.annotation.FieldDesc;
+import kr.ac.knu.comit.global.docs.annotation.ApiContract;
+import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.Example;
+import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.exception.ApiResponse;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;

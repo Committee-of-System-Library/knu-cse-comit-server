@@ -1,4 +1,4 @@
-package kr.ac.knu.comit.docs;
+package kr.ac.knu.comit.global.docs;
 
 import java.util.List;
 

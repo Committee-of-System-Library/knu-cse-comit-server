@@ -1,10 +1,10 @@
 package kr.ac.knu.comit.payment.controller.api;
 
 import jakarta.validation.Valid;
-import kr.ac.knu.comit.docs.annotation.ApiContract;
-import kr.ac.knu.comit.docs.annotation.ApiDoc;
-import kr.ac.knu.comit.docs.annotation.Example;
-import kr.ac.knu.comit.docs.annotation.FieldDesc;
+import kr.ac.knu.comit.global.docs.annotation.ApiContract;
+import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.Example;
+import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.payment.dto.PaymentConfirmRequest;
 import kr.ac.knu.comit.payment.dto.PaymentConfirmResponse;
 import kr.ac.knu.comit.payment.dto.PaymentDetailResponse;

@@ -1,9 +1,9 @@
 package kr.ac.knu.comit.member.controller.api;
 
 import jakarta.validation.Valid;
-import kr.ac.knu.comit.docs.annotation.ApiContract;
-import kr.ac.knu.comit.docs.annotation.ApiDoc;
-import kr.ac.knu.comit.docs.annotation.FieldDesc;
+import kr.ac.knu.comit.global.docs.annotation.ApiContract;
+import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;

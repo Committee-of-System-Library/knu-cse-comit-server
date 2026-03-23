@@ -1,4 +1,4 @@
-package kr.ac.knu.comit.docs.annotation;
+package kr.ac.knu.comit.global.docs.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
