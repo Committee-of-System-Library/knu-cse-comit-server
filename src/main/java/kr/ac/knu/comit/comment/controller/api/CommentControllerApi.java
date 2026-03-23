@@ -7,10 +7,12 @@ import kr.ac.knu.comit.comment.dto.HelpfulToggleResponse;
 import kr.ac.knu.comit.comment.dto.UpdateCommentRequest;
 import kr.ac.knu.comit.global.docs.annotation.ApiContract;
 import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.ApiError;
 import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
+import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,9 @@ public interface CommentControllerApi {
                     @FieldDesc(name = "helpfulCount", value = "도움이 됐어요 수"),
                     @FieldDesc(name = "helpfulByMe", value = "현재 로그인한 사용자의 도움이 됐어요 여부"),
                     @FieldDesc(name = "mine", value = "현재 로그인한 사용자가 작성한 댓글인지 여부")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "댓글을 조회할 게시글이 없거나 삭제된 상태일 때")
             }
     )
     @GetMapping("/posts/{postId}/comments")
@@ -44,6 +49,10 @@ public interface CommentControllerApi {
             descriptions = {
                     @FieldDesc(name = "postId", value = "댓글을 작성할 게시글 ID"),
                     @FieldDesc(name = "content", value = "댓글 본문")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "댓글을 작성할 게시글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
             }
     )
     @PostMapping("/posts/{postId}/comments")
@@ -58,6 +67,10 @@ public interface CommentControllerApi {
             descriptions = {
                     @FieldDesc(name = "commentId", value = "수정할 댓글 ID"),
                     @FieldDesc(name = "content", value = "수정할 댓글 본문")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.COMMENT_NOT_FOUND, when = "수정 대상 댓글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자가 아닌 사용자가 댓글을 수정하려고 할 때")
             }
     )
     @PatchMapping("/comments/{commentId}")
@@ -71,6 +84,10 @@ public interface CommentControllerApi {
             summary = "댓글 삭제",
             descriptions = {
                     @FieldDesc(name = "commentId", value = "삭제할 댓글 ID")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.COMMENT_NOT_FOUND, when = "삭제 대상 댓글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자가 아닌 사용자가 댓글을 삭제하려고 할 때")
             }
     )
     @DeleteMapping("/comments/{commentId}")
@@ -84,6 +101,9 @@ public interface CommentControllerApi {
             descriptions = {
                     @FieldDesc(name = "commentId", value = "도움이 됐어요를 토글할 댓글 ID"),
                     @FieldDesc(name = "helpful", value = "true면 도움이 됐어요가 추가되고 false면 취소됩니다.")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.COMMENT_NOT_FOUND, when = "도움이 됐어요를 누를 댓글이 없거나 삭제된 상태일 때")
             }
     )
     @PostMapping("/comments/{commentId}/helpful")

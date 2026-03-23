@@ -29,11 +29,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kr.ac.knu.comit.global.auth.AuthenticatedMember;
+import kr.ac.knu.comit.global.docs.annotation.ApiError;
 import kr.ac.knu.comit.global.docs.annotation.ApiContract;
 import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
 import kr.ac.knu.comit.global.docs.annotation.Example;
 import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.exception.ApiResponse;
+import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -55,6 +58,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ValueConstants;
 
 final class ApiDocIntrospector {
+
+    private static final String DEFAULT_UNAUTHORIZED_WHEN = "인증 정보가 없거나 유효한 회원을 식별할 수 없을 때";
 
     private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
             .findAndAddModules()
@@ -125,6 +130,7 @@ final class ApiDocIntrospector {
 
         RequestSpec requestSpec = inspectRequest(method, descriptions);
         Type responseType = unwrapDocumentType(method.getGenericReturnType());
+        List<ErrorDoc> errors = resolveErrors(method, apiDoc.errors());
 
         Example example = apiDoc.example();
         return new GeneratedEndpoint(
@@ -136,8 +142,10 @@ final class ApiDocIntrospector {
                 requestSpec.queryParameters(),
                 extractFields(requestSpec.requestBodyType(), descriptions),
                 extractFields(responseType, descriptions),
+                errors,
                 resolveExample(example.request(), requestSpec.requestBodyType()),
-                resolveExample(example.response(), responseType)
+                resolveExample(example.response(), responseType),
+                resolveErrorExample(errors)
         );
     }
 
@@ -382,8 +390,62 @@ final class ApiDocIntrospector {
         if (generated == null) {
             return "";
         }
+        return writeJson(generated);
+    }
+
+    private List<ErrorDoc> resolveErrors(Method method, ApiError[] declaredErrors) {
+        LinkedHashMap<BusinessErrorCode, ErrorDoc> errors = new LinkedHashMap<>();
+
+        if (hasAuthenticatedMemberParameter(method)) {
+            errors.put(
+                    BusinessErrorCode.UNAUTHORIZED,
+                    toErrorDoc(BusinessErrorCode.UNAUTHORIZED, DEFAULT_UNAUTHORIZED_WHEN)
+            );
+        }
+
+        for (ApiError declaredError : declaredErrors) {
+            BusinessErrorCode code = declaredError.code();
+            ErrorDoc existing = errors.get(code);
+            String when = StringUtils.hasText(declaredError.when())
+                    ? declaredError.when()
+                    : existing == null ? "-" : existing.when();
+            errors.put(code, toErrorDoc(code, when));
+        }
+
+        return List.copyOf(errors.values());
+    }
+
+    private boolean hasAuthenticatedMemberParameter(Method method) {
+        return Arrays.stream(method.getParameters())
+                .anyMatch(parameter -> parameter.isAnnotationPresent(AuthenticatedMember.class));
+    }
+
+    private ErrorDoc toErrorDoc(BusinessErrorCode code, String when) {
+        return new ErrorDoc(
+                code.name(),
+                code.getCode(),
+                code.getStatus(),
+                code.getMessage(),
+                StringUtils.hasText(when) ? when : "-"
+        );
+    }
+
+    private String resolveErrorExample(List<ErrorDoc> errors) {
+        if (errors.isEmpty()) {
+            return "";
+        }
+
+        ErrorDoc primary = errors.getFirst();
+        LinkedHashMap<String, Object> example = new LinkedHashMap<>();
+        example.put("result", "FAIL");
+        example.put("code", primary.responseCode());
+        example.put("message", primary.message());
+        return writeJson(example);
+    }
+
+    private String writeJson(Object value) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(generated);
+            return OBJECT_MAPPER.writeValueAsString(value);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Failed to render example JSON", exception);
         }
@@ -518,7 +580,7 @@ final class ApiDocIntrospector {
     private String prettyJson(String rawExample) {
         try {
             Object parsed = OBJECT_MAPPER.readValue(rawExample, Object.class);
-            return OBJECT_MAPPER.writeValueAsString(parsed);
+            return writeJson(parsed);
         } catch (JsonProcessingException exception) {
             return rawExample.trim();
         }

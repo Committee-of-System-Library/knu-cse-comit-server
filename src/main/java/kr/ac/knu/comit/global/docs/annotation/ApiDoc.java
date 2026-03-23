@@ -12,5 +12,7 @@ public @interface ApiDoc {
 
     FieldDesc[] descriptions() default {};
 
+    ApiError[] errors() default {};
+
     Example example() default @Example;
 }

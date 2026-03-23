@@ -52,6 +52,7 @@ src/main/java/.../payment/
 
 - `summary`
 - `descriptions`
+- `errors`
 - `example.request`
 - `example.response`
 
@@ -63,6 +64,7 @@ src/main/java/.../payment/
 - query param: `@RequestParam`
 - request body 필드: `@RequestBody` DTO 리플렉션
 - response body 필드: `ResponseEntity<T>`, `ApiResponse<T>`의 제네릭 타입 리플렉션
+- 인증 에러: `@AuthenticatedMember`가 있으면 `UNAUTHORIZED` 자동 포함
 - required 여부
   - DTO 필드: `@NotNull`, `@NotBlank`, `@NotEmpty`
   - `@RequestParam`: `required = true` 또는 validation 제약
@@ -112,6 +114,24 @@ public interface PaymentControllerApi {
     @PostMapping("/confirm")
     ResponseEntity<PaymentConfirmResponse> confirmPayment(@Valid @RequestBody PaymentConfirmRequest request);
 }
+```
+
+## errors 작성 규칙
+
+- 비즈니스 에러 코드는 `errors`에 직접 적는다.
+- `when`에는 "어떤 상황에서 이 코드가 내려가는지"만 짧게 적는다.
+- `@AuthenticatedMember`가 있는 엔드포인트는 `UNAUTHORIZED`가 자동 포함되므로 보통 직접 적지 않아도 된다.
+- validation 실패처럼 현재 구현상 `code` 없이 내려가는 에러는 이 섹션의 대상이 아니다.
+
+예시
+
+```java
+@ApiDoc(
+    summary = "게시글 상세 조회",
+    errors = {
+        @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
+    }
+)
 ```
 
 ## descriptions 작성 규칙

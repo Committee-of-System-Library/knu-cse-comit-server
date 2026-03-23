@@ -19,8 +19,10 @@ record GeneratedEndpoint(
         List<FieldDoc> queryParameters,
         List<FieldDoc> requestFields,
         List<FieldDoc> responseFields,
+        List<ErrorDoc> errors,
         String requestExample,
-        String responseExample
+        String responseExample,
+        String errorExample
 ) {
 }
 
@@ -29,5 +31,14 @@ record FieldDoc(
         String type,
         boolean required,
         String description
+) {
+}
+
+record ErrorDoc(
+        String name,
+        String responseCode,
+        int status,
+        String message,
+        String when
 ) {
 }

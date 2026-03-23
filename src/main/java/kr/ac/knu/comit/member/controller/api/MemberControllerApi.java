@@ -3,10 +3,12 @@ package kr.ac.knu.comit.member.controller.api;
 import jakarta.validation.Valid;
 import kr.ac.knu.comit.global.docs.annotation.ApiContract;
 import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.ApiError;
 import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
+import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
 import kr.ac.knu.comit.member.dto.UpdateNicknameRequest;
 import kr.ac.knu.comit.member.dto.UpdateStudentNumberVisibilityRequest;
@@ -26,6 +28,9 @@ public interface MemberControllerApi {
                     @FieldDesc(name = "nickname", value = "현재 회원 닉네임"),
                     @FieldDesc(name = "studentNumber", value = "현재 회원의 학번"),
                     @FieldDesc(name = "studentNumberVisible", value = "학번 공개 여부")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
             }
     )
     @GetMapping
@@ -37,6 +42,10 @@ public interface MemberControllerApi {
             summary = "내 닉네임 수정",
             descriptions = {
                     @FieldDesc(name = "nickname", value = "1자 이상 50자 이하 닉네임")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
+                    @ApiError(code = BusinessErrorCode.DUPLICATE_NICKNAME, when = "이미 사용 중인 닉네임으로 변경하려고 할 때")
             }
     )
     @PatchMapping
@@ -49,6 +58,9 @@ public interface MemberControllerApi {
             summary = "내 학번 공개 여부 수정",
             descriptions = {
                     @FieldDesc(name = "visible", value = "true면 학번을 공개하고 false면 비공개합니다.")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
             }
     )
     @PatchMapping("/student-number-visibility")

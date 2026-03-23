@@ -323,6 +323,76 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+<tr>
+    <td><code>MEMBER_NOT_FOUND</code></td>
+    <td>404</td>
+    <td><code>M001</code></td>
+    <td>존재하지 않는 회원입니다.</td>
+    <td>인증된 사용자의 로컬 회원 정보가 존재하지 않을 때</td>
+</tr>
+<tr>
+    <td><code>INVALID_TAG</code></td>
+    <td>400</td>
+    <td><code>P005</code></td>
+    <td>태그는 1~20자이어야 합니다.</td>
+    <td>태그 길이가 도메인 규칙을 벗어날 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
   &quot;boardType&quot; : &quot;QNA&quot;,
@@ -334,6 +404,14 @@
 <section class="card">
     <h3>응답 예시</h3>
     <pre><code>1</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
+}</code></pre>
 </section>
 </div>
 </article>
@@ -364,8 +442,86 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+<tr>
+    <td><code>POST_NOT_FOUND</code></td>
+    <td>404</td>
+    <td><code>P001</code></td>
+    <td>존재하지 않는 게시글입니다.</td>
+    <td>삭제 대상 게시글이 없거나 삭제된 상태일 때</td>
+</tr>
+<tr>
+    <td><code>FORBIDDEN</code></td>
+    <td>403</td>
+    <td><code>C002</code></td>
+    <td>접근 권한이 없습니다.</td>
+    <td>작성자 또는 관리자 권한 없이 삭제하려고 할 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>응답 예시</h3>
     <pre><code>{ }</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
+}</code></pre>
 </section>
 </div>
 </article>
@@ -471,6 +627,69 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+<tr>
+    <td><code>POST_NOT_FOUND</code></td>
+    <td>404</td>
+    <td><code>P001</code></td>
+    <td>존재하지 않는 게시글입니다.</td>
+    <td>조회 대상 게시글이 없거나 삭제된 상태일 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
   &quot;authorNickname&quot; : &quot;string&quot;,
@@ -483,6 +702,14 @@
   &quot;tags&quot; : [ &quot;string&quot; ],
   &quot;title&quot; : &quot;string&quot;,
   &quot;updatedAt&quot; : &quot;2024-01-01T12:00:00&quot;
+}</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
 }</code></pre>
 </section>
 </div>
@@ -559,6 +786,62 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
   &quot;hasNext&quot; : true,
@@ -573,6 +856,14 @@
     &quot;tags&quot; : [ &quot;string&quot; ],
     &quot;title&quot; : &quot;string&quot;
   } ]
+}</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
 }</code></pre>
 </section>
 </div>
@@ -625,9 +916,80 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+<tr>
+    <td><code>POST_NOT_FOUND</code></td>
+    <td>404</td>
+    <td><code>P001</code></td>
+    <td>존재하지 않는 게시글입니다.</td>
+    <td>좋아요를 누를 게시글이 없거나 삭제된 상태일 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
   &quot;liked&quot; : true
+}</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
 }</code></pre>
 </section>
 </div>
@@ -692,6 +1054,83 @@
 
 </section>
 <section class="card">
+    <h3>에러 응답 필드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>필드명</th>
+            <th>타입</th>
+            <th>필수 여부</th>
+            <th>설명</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>result</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다.</td>
+</tr>
+<tr>
+    <td><code>code</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>비즈니스 에러 코드입니다.</td>
+</tr>
+<tr>
+    <td><code>message</code></td>
+    <td><span class="type-chip type-string">String</span></td>
+    <td><span class="badge-required">required</span></td>
+    <td>에러 메시지입니다.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
+    <h3>에러 코드</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>HTTP 상태</th>
+            <th>응답 code</th>
+            <th>메시지</th>
+            <th>발생 조건</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+    <td><code>UNAUTHORIZED</code></td>
+    <td>401</td>
+    <td><code>C001</code></td>
+    <td>인증이 필요합니다.</td>
+    <td>인증 정보가 없거나 유효한 회원을 식별할 수 없을 때</td>
+</tr>
+<tr>
+    <td><code>POST_NOT_FOUND</code></td>
+    <td>404</td>
+    <td><code>P001</code></td>
+    <td>존재하지 않는 게시글입니다.</td>
+    <td>수정 대상 게시글이 없거나 삭제된 상태일 때</td>
+</tr>
+<tr>
+    <td><code>FORBIDDEN</code></td>
+    <td>403</td>
+    <td><code>C002</code></td>
+    <td>접근 권한이 없습니다.</td>
+    <td>작성자가 아닌 사용자가 수정하려고 할 때</td>
+</tr>
+<tr>
+    <td><code>INVALID_TAG</code></td>
+    <td>400</td>
+    <td><code>P005</code></td>
+    <td>태그는 1~20자이어야 합니다.</td>
+    <td>태그 길이가 도메인 규칙을 벗어날 때</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
   &quot;content&quot; : &quot;string&quot;,
@@ -702,6 +1141,14 @@
 <section class="card">
     <h3>응답 예시</h3>
     <pre><code>{ }</code></pre>
+</section>
+<section class="card">
+    <h3>에러 예시</h3>
+    <pre><code>{
+  &quot;result&quot; : &quot;FAIL&quot;,
+  &quot;code&quot; : &quot;C001&quot;,
+  &quot;message&quot; : &quot;인증이 필요합니다.&quot;
+}</code></pre>
 </section>
 </div>
 </article>

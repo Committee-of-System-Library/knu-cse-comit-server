@@ -2,10 +2,12 @@ package kr.ac.knu.comit.post.controller.api;
 
 import kr.ac.knu.comit.global.docs.annotation.ApiContract;
 import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
+import kr.ac.knu.comit.global.docs.annotation.ApiError;
 import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
+import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.post.domain.BoardType;
 import kr.ac.knu.comit.post.dto.*;
 import jakarta.validation.Valid;
@@ -32,7 +34,12 @@ public interface PostControllerApi {
             @AuthenticatedMember MemberPrincipal principal
     );
 
-    @ApiDoc(summary = "게시글 상세 조회")
+    @ApiDoc(
+            summary = "게시글 상세 조회",
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
+            }
+    )
     @GetMapping("/{postId}")
     ResponseEntity<ApiResponse<PostDetailResponse>> getPost(
             @PathVariable Long postId,
@@ -43,6 +50,10 @@ public interface PostControllerApi {
             summary = "게시글 작성",
             descriptions = {
                     @FieldDesc(name = "tags", value = "선택 항목입니다. 최대 5개, 각 20자 이하입니다.")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
+                    @ApiError(code = BusinessErrorCode.INVALID_TAG, when = "태그 길이가 도메인 규칙을 벗어날 때")
             }
     )
     @PostMapping
@@ -51,7 +62,14 @@ public interface PostControllerApi {
             @AuthenticatedMember MemberPrincipal principal
     );
 
-    @ApiDoc(summary = "게시글 수정")
+    @ApiDoc(
+            summary = "게시글 수정",
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "수정 대상 게시글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자가 아닌 사용자가 수정하려고 할 때"),
+                    @ApiError(code = BusinessErrorCode.INVALID_TAG, when = "태그 길이가 도메인 규칙을 벗어날 때")
+            }
+    )
     @PatchMapping("/{postId}")
     ResponseEntity<ApiResponse<Void>> updatePost(
             @PathVariable Long postId,
@@ -63,6 +81,10 @@ public interface PostControllerApi {
             summary = "게시글 삭제",
             descriptions = {
                     @FieldDesc(name = "postId", value = "삭제할 게시글 ID")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "삭제 대상 게시글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자 또는 관리자 권한 없이 삭제하려고 할 때")
             }
     )
     @DeleteMapping("/{postId}")
@@ -75,6 +97,9 @@ public interface PostControllerApi {
             summary = "좋아요 토글",
             descriptions = {
                     @FieldDesc(name = "liked", value = "true면 좋아요가 추가되고 false면 좋아요가 취소됩니다.")
+            },
+            errors = {
+                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "좋아요를 누를 게시글이 없거나 삭제된 상태일 때")
             }
     )
     @PostMapping("/{postId}/like")

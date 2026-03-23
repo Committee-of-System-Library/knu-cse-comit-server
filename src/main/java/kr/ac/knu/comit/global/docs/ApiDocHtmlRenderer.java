@@ -486,9 +486,35 @@ final class ApiDocHtmlRenderer {
         sections.append(renderFieldCard("쿼리 파라미터", endpoint.queryParameters()));
         sections.append(renderFieldCard("요청 바디 필드", endpoint.requestFields()));
         sections.append(renderFieldCard("응답 바디 필드", endpoint.responseFields()));
+        sections.append(renderErrorFieldCard(endpoint.errors()));
+        sections.append(renderErrorCodeCard(endpoint.errors()));
         sections.append(renderExampleCard("요청 예시", endpoint.requestExample()));
         sections.append(renderExampleCard("응답 예시", endpoint.responseExample()));
+        sections.append(renderExampleCard("에러 예시", endpoint.errorExample()));
         return sections.toString();
+    }
+
+    private static String renderErrorFieldCard(List<ErrorDoc> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return "";
+        }
+        return renderFieldCard("에러 응답 필드", List.of(
+                new FieldDoc("result", "String", true, "요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다."),
+                new FieldDoc("code", "String", true, "비즈니스 에러 코드입니다."),
+                new FieldDoc("message", "String", true, "에러 메시지입니다.")
+        ));
+    }
+
+    private static String renderErrorCodeCard(List<ErrorDoc> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return "";
+        }
+        return """
+                <section class="card">
+                    <h3>에러 코드</h3>
+                    %s
+                </section>
+                """.formatted(renderErrorTable(errors));
     }
 
     private static String renderFieldCard(String title, List<FieldDoc> fields) {
@@ -548,6 +574,42 @@ final class ApiDocHtmlRenderer {
                             <th>타입</th>
                             <th>필수 여부</th>
                             <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>%s</tbody>
+                </table>
+                """.formatted(rows);
+    }
+
+    private static String renderErrorTable(List<ErrorDoc> errors) {
+        String rows = errors.stream()
+                .map(error -> """
+                        <tr>
+                            <td><code>%s</code></td>
+                            <td>%d</td>
+                            <td><code>%s</code></td>
+                            <td>%s</td>
+                            <td>%s</td>
+                        </tr>
+                        """.formatted(
+                        escapeHtml(error.name()),
+                        error.status(),
+                        escapeHtml(error.responseCode()),
+                        escapeHtml(error.message()),
+                        escapeHtml(error.when())
+                ))
+                .reduce((left, right) -> left + right)
+                .orElse("");
+
+        return """
+                <table>
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>HTTP 상태</th>
+                            <th>응답 code</th>
+                            <th>메시지</th>
+                            <th>발생 조건</th>
                         </tr>
                     </thead>
                     <tbody>%s</tbody>
