@@ -1,0 +1,73 @@
+server:
+  port: ${SPRING_PORT}
+  servlet:
+    session:
+      timeout: 1800
+      cookie:
+        secure: true
+        same-site: strict
+  tomcat:
+    max-connections: ${TOMCAT_MAX_CONNECTIONS:20000}
+    threads:
+      max: ${TOMCAT_MAX_THREADS:600}
+      min-spare: ${TOMCAT_MIN_SPARE_THREADS:100}
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:8}
+      minimum-idle: ${HIKARI_MIN_IDLE:8}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT:3000}
+      validation-timeout: ${HIKARI_VALIDATION_TIMEOUT:3000}
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT:300000}
+      max-lifetime: ${HIKARI_MAX_LIFETIME:600000}
+      keepalive-time: ${HIKARI_KEEPALIVE_TIME:60000}
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE}
+      max-request-size: ${MAX_REQUEST_SIZE}
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: ${DDL_AUTO:none}
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        highlight_sql: false
+        use_sql_comments: false
+  flyway:
+    enabled: false
+    baseline-on-migrate: false
+  threads:
+    virtual:
+      enabled: ${VIRTUAL_THREADS_ENABLED:false}
+  task:
+    execution:
+      pool:
+        core-size: ${ASYNC_CORE_POOL_SIZE:5}
+        max-size: ${ASYNC_MAX_POOL_SIZE:5}
+        queue-capacity: ${ASYNC_QUEUE_CAPACITY:100}
+  devtools:
+    restart:
+      enabled: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:10}
+          max-idle: ${REDIS_POOL_MAX_IDLE:10}
+          min-idle: ${REDIS_POOL_MIN_IDLE:2}
+          max-wait: ${REDIS_POOL_MAX_WAIT:1000ms}
+
+logging:
+  file:
+    name: ${LOG_FILE_PATH:./logs/app.log}
