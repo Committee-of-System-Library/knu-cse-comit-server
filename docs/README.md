@@ -8,7 +8,7 @@
 - [API 문서 생성기 동작 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/api-doc-generator-flow.md)
 - [Java 주석 규칙](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/java-comment-convention.md)
 - [로컬 실행 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/ops/local-development.md)
-- [ProblemDetail 에러 응답 설계](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/features/problem-detail-error-response.md)
+- [ADR-002 ProblemDetail 기반 에러 응답 표준 채택](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/002-problem-detail-error-response.md)
 
 ## 디렉토리 구조
 

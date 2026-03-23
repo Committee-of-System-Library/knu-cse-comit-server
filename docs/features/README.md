@@ -17,9 +17,8 @@
 
 ## 현재 문서
 
-| 파일 | 내용 |
-|---|---|
-| `problem-detail-error-response.md` | ProblemDetail 기반 에러 응답 구조 설계 |
+현재 별도 기능 설계 문서는 없다.
+ProblemDetail 에러 응답 설계는 [ADR-002](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/002-problem-detail-error-response.md)로 승격했다.
 
 ## 템플릿
 
