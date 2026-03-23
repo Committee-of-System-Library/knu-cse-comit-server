@@ -29,13 +29,14 @@ AI 에이전트(Claude, Cursor, Copilot 등)가 이 프로젝트에서 일관된
 
 ## 패키지 구조 원칙
 
-레이어드 아키텍처 기반. Repository는 도메인과 1:1 종속이므로 `domain/`에 함께 관리.
+도메인 우선 패키지 분리 (Light DDD). 도메인 안에서 레이어드 구조 유지.
+팀원이 도메인 단위로 작업을 나눌 수 있어 파일 충돌 최소화.
 
 ```text
 kr.ac.knu.comit/
 ├── global/               # 공통 예외, 응답 형식 등
 │   └── exception/
-├── {도메인}/             # 도메인별 패키지
+├── {도메인}/             # post / user / comment / notice / event ...
 │   ├── controller/
 │   │   ├── api/          # @ApiContract 인터페이스 (문서 + 라우팅 정의)
 │   │   └── {Domain}Controller.java
