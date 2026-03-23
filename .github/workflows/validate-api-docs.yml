@@ -26,6 +26,9 @@ jobs:
 
       - name: Verify generated docs are committed
         run: |
+          echo "=== git tracked files in docs/api ==="
+          git ls-files docs/api/
+          echo "=== git diff ==="
           git diff -- docs/api
           if ! git diff --exit-code -- docs/api; then
             echo "::error::API 문서가 업데이트되지 않았습니다."
