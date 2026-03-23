@@ -15,6 +15,12 @@
 예) payment-confirm.md, member-auth.md
 ```
 
+## 현재 문서
+
+| 파일 | 내용 |
+|---|---|
+| `problem-detail-error-response.md` | ProblemDetail 기반 에러 응답 구조 설계 |
+
 ## 템플릿
 
 ```markdown

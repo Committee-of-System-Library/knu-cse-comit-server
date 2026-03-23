@@ -33,17 +33,17 @@ docs/api/ 전체 재생성
 ## 주요 코드 위치
 
 - 엔트리포인트
-  - [ApiDocGenerator.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/docs/ApiDocGenerator.java)
+  - [ApiDocGenerator.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/global/docs/ApiDocGenerator.java)
 - 메타데이터 추출
-  - [ApiDocIntrospector.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/docs/ApiDocIntrospector.java)
+  - [ApiDocIntrospector.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/global/docs/ApiDocIntrospector.java)
 - 렌더링
-  - [ApiDocHtmlRenderer.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/docs/ApiDocHtmlRenderer.java)
+  - [ApiDocHtmlRenderer.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/global/docs/ApiDocHtmlRenderer.java)
 - 중간 모델
-  - [ApiDocModels.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/docs/ApiDocModels.java)
+  - [ApiDocModels.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/global/docs/ApiDocModels.java)
 
 ## 1. Gradle task 진입
 
-`build.gradle`의 `generateApiDocs` task가 `JavaExec`로 생성기를 실행한다.
+`build.gradle`의 `generateApiDocs` task가 `JavaExec`로 `kr.ac.knu.comit.global.docs.ApiDocGenerator`를 실행한다.
 
 입력값
 

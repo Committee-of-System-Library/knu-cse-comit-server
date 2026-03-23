@@ -5,6 +5,8 @@
 
 관련 배경은 [ADR-001](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/001-api-doc-automation.md)에 정리되어 있다.
 
+현재 문서 관련 어노테이션은 `kr.ac.knu.comit.global.docs.annotation` 패키지에 있다.
+
 ## 언제 이 방식을 쓰나
 
 - 새 REST API를 추가할 때
@@ -29,6 +31,7 @@ src/main/java/.../payment/
   - `@ApiContract`
   - `@ApiDoc`
   - `@GetMapping`, `@PostMapping` 등 라우팅 정의
+  - 필요 시 `@AuthenticatedMember` 같은 인증 파라미터 선언
   - 메서드 시그니처 정의
 - `controller/*.java`
   - `@RestController`
