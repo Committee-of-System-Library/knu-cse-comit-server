@@ -29,6 +29,8 @@ AI 에이전트(Claude, Cursor, Copilot 등)가 이 프로젝트에서 일관된
 
 ## 패키지 구조 원칙
 
+레이어드 아키텍처 기반. Repository는 도메인과 1:1 종속이므로 `domain/`에 함께 관리.
+
 ```text
 kr.ac.knu.comit/
 ├── global/               # 공통 예외, 응답 형식 등
@@ -37,9 +39,11 @@ kr.ac.knu.comit/
 │   ├── controller/
 │   │   ├── api/          # @ApiContract 인터페이스 (문서 + 라우팅 정의)
 │   │   └── {Domain}Controller.java
-│   ├── service/
-│   ├── domain/
-│   └── repository/
+│   ├── service/          # 비즈니스 로직, 트랜잭션 경계
+│   ├── domain/           # Entity + Repository (도메인 응집)
+│   │   ├── {Domain}.java
+│   │   └── {Domain}Repository.java
+│   └── dto/              # Request / Response DTO
 └── docs/                 # API 문서 자동 생성기
     └── ApiDocGenerator.java
 ```
@@ -48,12 +52,25 @@ kr.ac.knu.comit/
 
 ## 코드 컨벤션
 
-- 컨트롤러 로직과 API 문서 정의는 반드시 분리
-  - 문서·라우팅 정의 → `controller/api/{Domain}ControllerApi.java` (@ApiContract 인터페이스)
-  - 비즈니스 로직 → `{Domain}Controller.java` (implements만 선언)
+### 컨트롤러
+- 문서·라우팅 정의 → `controller/api/{Domain}ControllerApi.java` (`@ApiContract` 인터페이스)
+- 비즈니스 로직 → `{Domain}Controller.java` (`implements`만 선언, 로직 없음)
 - `@ApiDoc` 어노테이션은 인터페이스에만 작성
 - 응답은 `ResponseEntity<T>` 통일
+
+### DTO 네이밍
+- `{행위}{도메인}Request` / `{행위}{도메인}Response` 형식
+- 예: `PaymentConfirmRequest`, `PaymentDetailResponse`
+- 행위가 다르면 반드시 별도 DTO (같은 필드여도 재사용 금지)
+
+### 트랜잭션
+- 클래스에 `@Transactional(readOnly = true)` 기본 적용
+- 쓰기(INSERT/UPDATE/DELETE) 메서드에만 `@Transactional` 명시
+- Controller / Repository에는 트랜잭션 어노테이션 금지
+
+### 예외
 - 예외는 `global/exception/` 하위에서 공통 처리
+- 비즈니스 예외는 `BusinessException` + `BusinessErrorCode`로 관리
 
 ---
 
