@@ -73,6 +73,32 @@ kr.ac.knu.comit/
 - 예외는 `global/exception/` 하위에서 공통 처리
 - 비즈니스 예외는 `BusinessException` + `BusinessErrorCode`로 관리
 
+### Entity 설계
+- `@NoArgsConstructor(access = PROTECTED)` 필수 — 외부 직접 생성 금지
+- 정적 팩토리 메서드 `create(...)` 로 생성 — 생성 규칙·검증 캡슐화
+- setter 금지 — 상태 변경은 의미 있는 메서드명 사용 (`post.update(...)`, `post.delete()`)
+- soft delete: `deletedAt` 필드 통일 (`LocalDateTime`, nullable)
+- 도메인 규칙 검증(null, blank, 길이 등)은 Entity 안에서 `private static void validateXxx()`
+
+### Service 설계
+- Controller가 직접 호출하는 메서드만 `public` — 내부 헬퍼는 `private`
+- 내부 조회 헬퍼 네이밍: `findXxxOrThrow(id)` — 없으면 `BusinessException` throw
+- 타 도메인 Repository 직접 접근 금지 → 해당 도메인의 Service 메서드 호출
+- 비즈니스 권한 검증(소유자 확인, 중복 등)은 Service에서 수행
+
+### DTO 변환 책임
+- **Request DTO**: 순수 데이터 운반만. Entity/변환 로직 없음
+- **Response DTO**: `from(Entity)` 정적 팩토리 메서드 허용 — Entity → DTO 변환은 DTO 책임
+- Request → Entity 변환: Service에서 직접 수행 (`Entity.create(request.field(), ...)`)
+- MapStruct/ModelMapper 사용 금지 — 명시적 변환 원칙
+
+### Validation 책임 분리
+| 검증 유형 | 위치 |
+|---|---|
+| 형식 (null, blank, 길이) | Request DTO의 Bean Validation (`@NotBlank`, `@Size`) + Entity 내부 |
+| 도메인 규칙 (값의 의미) | Entity 정적 팩토리 / 상태 변경 메서드 |
+| 비즈니스 규칙 (중복, 권한) | Service |
+
 ---
 
 ## API 문서 자동화
