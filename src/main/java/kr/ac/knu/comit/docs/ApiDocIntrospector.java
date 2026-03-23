@@ -46,11 +46,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ValueConstants;
 
 final class ApiDocIntrospector {
 
@@ -121,7 +124,7 @@ final class ApiDocIntrospector {
         Map<String, String> descriptions = Arrays.stream(apiDoc.descriptions())
                 .collect(Collectors.toMap(FieldDesc::name, FieldDesc::value, (left, right) -> right, LinkedHashMap::new));
 
-        Type requestType = findRequestBodyType(method);
+        RequestSpec requestSpec = inspectRequest(method, descriptions);
         Type responseType = unwrapDocumentType(method.getGenericReturnType());
 
         Example example = apiDoc.example();
@@ -130,9 +133,11 @@ final class ApiDocIntrospector {
                 apiDoc.summary(),
                 mappingInfo.httpMethod(),
                 joinPaths(classPath, mappingInfo.path()),
-                extractFields(requestType, descriptions),
+                requestSpec.pathParameters(),
+                requestSpec.queryParameters(),
+                extractFields(requestSpec.requestBodyType(), descriptions),
                 extractFields(responseType, descriptions),
-                resolveExample(example.request(), requestType),
+                resolveExample(example.request(), requestSpec.requestBodyType()),
                 resolveExample(example.response(), responseType)
         );
     }
@@ -230,6 +235,67 @@ final class ApiDocIntrospector {
         return new RequestMappingInfo(methodValue, firstPath(requestMapping.path(), requestMapping.value()));
     }
 
+    private RequestSpec inspectRequest(Method method, Map<String, String> descriptions) {
+        List<FieldDoc> pathParameters = new ArrayList<>();
+        List<FieldDoc> queryParameters = new ArrayList<>();
+        Type requestBodyType = null;
+
+        for (Parameter parameter : method.getParameters()) {
+            if (parameter.isAnnotationPresent(RequestBody.class)) {
+                requestBodyType = unwrapDocumentType(parameter.getParameterizedType());
+                continue;
+            }
+
+            PathVariable pathVariable = parameter.getAnnotation(PathVariable.class);
+            if (pathVariable != null) {
+                pathParameters.add(new FieldDoc(
+                        resolveParameterName(pathVariable.name(), pathVariable.value(), parameter),
+                        describeType(parameter.getParameterizedType()),
+                        true,
+                        descriptions.getOrDefault(resolveParameterName(pathVariable.name(), pathVariable.value(), parameter), "-")
+                ));
+                continue;
+            }
+
+            RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
+            if (requestParam != null) {
+                String parameterName = resolveParameterName(requestParam.name(), requestParam.value(), parameter);
+                queryParameters.add(new FieldDoc(
+                        parameterName,
+                        describeType(parameter.getParameterizedType()),
+                        isRequired(parameter, requestParam),
+                        descriptions.getOrDefault(parameterName, "-")
+                ));
+            }
+        }
+
+        return new RequestSpec(
+                List.copyOf(pathParameters),
+                List.copyOf(queryParameters),
+                requestBodyType
+        );
+    }
+
+    private boolean isRequired(Parameter parameter, RequestParam requestParam) {
+        if (!ValueConstants.DEFAULT_NONE.equals(requestParam.defaultValue())) {
+            return false;
+        }
+        if (hasRequiredConstraint(parameter.getAnnotations())) {
+            return true;
+        }
+        return requestParam.required();
+    }
+
+    private String resolveParameterName(String name, String value, Parameter parameter) {
+        if (StringUtils.hasText(name)) {
+            return name;
+        }
+        if (StringUtils.hasText(value)) {
+            return value;
+        }
+        return parameter.getName();
+    }
+
     private Type findRequestBodyType(Method method) {
         for (Parameter parameter : method.getParameters()) {
             if (parameter.isAnnotationPresent(RequestBody.class)) {
@@ -294,7 +360,11 @@ final class ApiDocIntrospector {
     }
 
     private boolean isRequired(Field field) {
-        return Arrays.stream(field.getAnnotations())
+        return hasRequiredConstraint(field.getAnnotations());
+    }
+
+    private boolean hasRequiredConstraint(Annotation[] annotations) {
+        return Arrays.stream(annotations)
                 .map(Annotation::annotationType)
                 .anyMatch(annotationType ->
                         annotationType.getPackageName().startsWith("jakarta.validation.constraints")
@@ -512,5 +582,12 @@ final class ApiDocIntrospector {
     }
 
     private record RequestMappingInfo(String httpMethod, String path) {
+    }
+
+    private record RequestSpec(
+            List<FieldDoc> pathParameters,
+            List<FieldDoc> queryParameters,
+            Type requestBodyType
+    ) {
     }
 }

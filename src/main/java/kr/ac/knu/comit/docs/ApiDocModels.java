@@ -15,6 +15,8 @@ record GeneratedEndpoint(
         String summary,
         String httpMethod,
         String path,
+        List<FieldDoc> pathParameters,
+        List<FieldDoc> queryParameters,
         List<FieldDoc> requestFields,
         List<FieldDoc> responseFields,
         String requestExample,

@@ -28,7 +28,12 @@ class ApiDocGeneratorTest {
 
         String html = Files.readString(htmlFile);
         assertThat(html).contains("결제 승인");
+        assertThat(html).contains("결제 조회");
+        assertThat(html).contains("경로 변수");
+        assertThat(html).contains("쿼리 파라미터");
+        assertThat(html).contains("includeHistory");
         assertThat(html).contains("/v1/payments/confirm");
+        assertThat(html).contains("/v1/payments/{orderId}");
         assertThat(html).contains("paymentKey");
         assertThat(html).contains("type-chip type-string");
         assertThat(html).contains("type-chip type-number");

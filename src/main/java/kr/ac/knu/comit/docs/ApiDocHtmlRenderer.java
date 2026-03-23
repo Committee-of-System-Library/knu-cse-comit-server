@@ -457,24 +457,7 @@ final class ApiDocHtmlRenderer {
                     <h2>%s</h2>
                     <p>%s</p>
                     <div class="path-box"><span class="method">%s</span>%s</div>
-                    <div class="section-grid">
-                        <section class="card">
-                            <h3>요청 필드</h3>
-                            %s
-                        </section>
-                        <section class="card">
-                            <h3>응답 필드</h3>
-                            %s
-                        </section>
-                        <section class="card">
-                            <h3>요청 예시</h3>
-                            %s
-                        </section>
-                        <section class="card">
-                            <h3>응답 예시</h3>
-                            %s
-                        </section>
-                    </div>
+                    <div class="section-grid">%s</div>
                 </article>
                 """.formatted(
                 escapeHtml(endpoint.methodName()),
@@ -483,11 +466,43 @@ final class ApiDocHtmlRenderer {
                 escapeHtml(endpoint.summary()),
                 escapeHtml(endpoint.httpMethod()),
                 escapeHtml(endpoint.path()),
-                renderFieldTable(endpoint.requestFields()),
-                renderFieldTable(endpoint.responseFields()),
-                renderCodeBlock(endpoint.requestExample()),
-                renderCodeBlock(endpoint.responseExample())
+                renderEndpointSections(endpoint)
         );
+    }
+
+    private static String renderEndpointSections(GeneratedEndpoint endpoint) {
+        StringBuilder sections = new StringBuilder();
+        sections.append(renderFieldCard("경로 변수", endpoint.pathParameters()));
+        sections.append(renderFieldCard("쿼리 파라미터", endpoint.queryParameters()));
+        sections.append(renderFieldCard("요청 바디 필드", endpoint.requestFields()));
+        sections.append(renderFieldCard("응답 바디 필드", endpoint.responseFields()));
+        sections.append(renderExampleCard("요청 예시", endpoint.requestExample()));
+        sections.append(renderExampleCard("응답 예시", endpoint.responseExample()));
+        return sections.toString();
+    }
+
+    private static String renderFieldCard(String title, List<FieldDoc> fields) {
+        if (fields == null || fields.isEmpty()) {
+            return "";
+        }
+        return """
+                <section class="card">
+                    <h3>%s</h3>
+                    %s
+                </section>
+                """.formatted(escapeHtml(title), renderFieldTable(fields));
+    }
+
+    private static String renderExampleCard(String title, String example) {
+        if (example == null || example.isBlank()) {
+            return "";
+        }
+        return """
+                <section class="card">
+                    <h3>%s</h3>
+                    %s
+                </section>
+                """.formatted(escapeHtml(title), renderCodeBlock(example));
     }
 
     private static String renderFieldTable(List<FieldDoc> fields) {
