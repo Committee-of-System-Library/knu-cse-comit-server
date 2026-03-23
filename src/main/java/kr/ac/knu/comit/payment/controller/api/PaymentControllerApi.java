@@ -7,12 +7,42 @@ import kr.ac.knu.comit.docs.annotation.Example;
 import kr.ac.knu.comit.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.payment.dto.PaymentConfirmRequest;
 import kr.ac.knu.comit.payment.dto.PaymentConfirmResponse;
+import kr.ac.knu.comit.payment.dto.PaymentDetailResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @ApiContract
 public interface PaymentControllerApi {
+
+    @ApiDoc(
+            summary = "결제 조회",
+            descriptions = {
+                    @FieldDesc(name = "orderId", value = "조회할 주문 ID"),
+                    @FieldDesc(name = "includeHistory", value = "거래 이력 포함 여부"),
+                    @FieldDesc(name = "status", value = "결제 상태"),
+                    @FieldDesc(name = "approvedAt", value = "결제 승인 시각"),
+                    @FieldDesc(name = "historyIncluded", value = "거래 이력 포함 여부")
+            },
+            example = @Example(
+                    response = """
+                            {
+                              "orderId": "ORDER-001",
+                              "status": "DONE",
+                              "approvedAt": "2024-01-01T12:00:00",
+                              "historyIncluded": true
+                            }
+                            """
+            )
+    )
+    @GetMapping("/{orderId}")
+    ResponseEntity<PaymentDetailResponse> getPayment(
+            @PathVariable("orderId") String orderId,
+            @RequestParam(name = "includeHistory", defaultValue = "false") boolean includeHistory
+    );
 
     @ApiDoc(
             summary = "결제 승인",

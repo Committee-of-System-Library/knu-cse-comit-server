@@ -19,6 +19,16 @@ class PaymentControllerWebTest {
     private MockMvc mockMvc;
 
     @Test
+    void mapsPathVariableAndRequestParamUsingInterfaceAnnotations() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/v1/payments/ORDER-001")
+                        .param("includeHistory", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").value("ORDER-001"))
+                .andExpect(jsonPath("$.historyIncluded").value(true))
+                .andExpect(jsonPath("$.status").value("DONE"));
+    }
+
+    @Test
     void mapsRequestUsingInterfaceAnnotations() throws Exception {
         mockMvc.perform(post("/v1/payments/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
