@@ -1,28 +1,28 @@
 window.API_DOCS = [
 {
   title: "CommentControllerApi",
-  summary: "댓글 작성",
+  summary: "게시글에 새 댓글을 작성합니다.",
   href: "./comment/CommentControllerApi.html",
   endpointCount: 5,
   sectionPath: "comment"
 },
 {
   title: "MemberControllerApi",
-  summary: "내 프로필 조회",
+  summary: "현재 로그인한 회원의 프로필을 조회합니다.",
   href: "./member/MemberControllerApi.html",
   endpointCount: 3,
   sectionPath: "member"
 },
 {
   title: "PaymentControllerApi",
-  summary: "결제 승인",
+  summary: "결제 승인 요청을 처리하고 승인 결과를 반환합니다.",
   href: "./payment/PaymentControllerApi.html",
   endpointCount: 2,
   sectionPath: "payment"
 },
 {
   title: "PostControllerApi",
-  summary: "게시글 작성",
+  summary: "새 게시글을 작성합니다.",
   href: "./post/PostControllerApi.html",
   endpointCount: 6,
   sectionPath: "post"

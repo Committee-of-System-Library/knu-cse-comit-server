@@ -257,11 +257,11 @@
     <span>GET /members/me</span>
 </a>
 <a href="#updateNickname">
-    <strong>내 닉네임 수정</strong>
+    <strong>닉네임 수정</strong>
     <span>PATCH /members/me</span>
 </a>
 <a href="#updateStudentNumberVisibility">
-    <strong>내 학번 공개 여부 수정</strong>
+    <strong>학번 공개 여부 수정</strong>
     <span>PATCH /members/me/student-number-visibility</span>
 </a>
 </nav>
@@ -269,7 +269,7 @@
         <section class="content"><article class="endpoint" id="getMyProfile">
     <div class="eyebrow">GET</div>
     <h2>내 프로필 조회</h2>
-    <p>내 프로필 조회</p>
+    <p>현재 로그인한 회원의 프로필을 조회합니다.</p>
     <div class="path-box"><span class="method">GET</span>/members/me</div>
     <div class="section-grid"><section class="card">
     <h3>응답 바디 필드</h3>
@@ -286,7 +286,7 @@
     <td><code>id</code></td>
     <td><span class="type-chip type-number">Long</span></td>
     <td><span class="badge-optional">optional</span></td>
-    <td>-</td>
+    <td>회원 고유 ID</td>
 </tr>
 <tr>
     <td><code>nickname</code></td>
@@ -376,10 +376,13 @@
 <section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
-  &quot;id&quot; : 1,
-  &quot;nickname&quot; : &quot;string&quot;,
-  &quot;studentNumber&quot; : &quot;string&quot;,
-  &quot;studentNumberVisible&quot; : true
+  &quot;result&quot; : &quot;SUCCESS&quot;,
+  &quot;data&quot; : {
+    &quot;id&quot; : 1,
+    &quot;nickname&quot; : &quot;comit-user&quot;,
+    &quot;studentNumber&quot; : &quot;20230001&quot;,
+    &quot;studentNumberVisible&quot; : true
+  }
 }</code></pre>
 </section>
 <section class="card">
@@ -394,8 +397,8 @@
 </article>
 <article class="endpoint" id="updateNickname">
     <div class="eyebrow">PATCH</div>
-    <h2>내 닉네임 수정</h2>
-    <p>내 닉네임 수정</p>
+    <h2>닉네임 수정</h2>
+    <p>현재 로그인한 회원의 닉네임을 수정합니다.</p>
     <div class="path-box"><span class="method">PATCH</span>/members/me</div>
     <div class="section-grid"><section class="card">
     <h3>요청 바디 필드</h3>
@@ -412,7 +415,7 @@
     <td><code>nickname</code></td>
     <td><span class="type-chip type-string">String</span></td>
     <td><span class="badge-required">required</span></td>
-    <td>1자 이상 50자 이하 닉네임</td>
+    <td>1자 이상 50자 이하의 새 닉네임</td>
 </tr>
 </tbody>
 </table>
@@ -491,12 +494,14 @@
 <section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
-  &quot;nickname&quot; : &quot;string&quot;
+  &quot;nickname&quot; : &quot;backend-dev&quot;
 }</code></pre>
 </section>
 <section class="card">
     <h3>응답 예시</h3>
-    <pre><code>{ }</code></pre>
+    <pre><code>{
+  &quot;result&quot; : &quot;SUCCESS&quot;
+}</code></pre>
 </section>
 <section class="card">
     <h3>에러 예시</h3>
@@ -510,8 +515,8 @@
 </article>
 <article class="endpoint" id="updateStudentNumberVisibility">
     <div class="eyebrow">PATCH</div>
-    <h2>내 학번 공개 여부 수정</h2>
-    <p>내 학번 공개 여부 수정</p>
+    <h2>학번 공개 여부 수정</h2>
+    <p>현재 로그인한 회원의 학번 공개 여부를 수정합니다.</p>
     <div class="path-box"><span class="method">PATCH</span>/members/me/student-number-visibility</div>
     <div class="section-grid"><section class="card">
     <h3>요청 바디 필드</h3>
@@ -600,12 +605,14 @@
 <section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
-  &quot;visible&quot; : true
+  &quot;visible&quot; : false
 }</code></pre>
 </section>
 <section class="card">
     <h3>응답 예시</h3>
-    <pre><code>{ }</code></pre>
+    <pre><code>{
+  &quot;result&quot; : &quot;SUCCESS&quot;
+}</code></pre>
 </section>
 <section class="card">
     <h3>에러 예시</h3>

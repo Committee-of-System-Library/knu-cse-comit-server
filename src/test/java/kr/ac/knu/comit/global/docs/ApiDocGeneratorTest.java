@@ -30,6 +30,8 @@ class ApiDocGeneratorTest {
         String html = Files.readString(htmlFile);
         assertThat(html).contains("결제 승인");
         assertThat(html).contains("결제 조회");
+        assertThat(html).contains("주문 ID 기준으로 결제 상태를 조회합니다.");
+        assertThat(html).contains("결제 승인 요청을 처리하고 승인 결과를 반환합니다.");
         assertThat(html).contains("경로 변수");
         assertThat(html).contains("쿼리 파라미터");
         assertThat(html).contains("includeHistory");

@@ -146,7 +146,7 @@ final class ApiDocHtmlRenderer {
                 .map(document -> {
                     String summary = document.endpoints().isEmpty()
                             ? "-"
-                            : document.endpoints().getFirst().summary();
+                            : firstLine(document.endpoints().getFirst().description(), document.endpoints().getFirst().summary());
                     return """
                             {
                               title: "%s",
@@ -473,11 +473,18 @@ final class ApiDocHtmlRenderer {
                 escapeHtml(endpoint.methodName()),
                 escapeHtml(endpoint.httpMethod()),
                 escapeHtml(endpoint.summary()),
-                escapeHtml(endpoint.summary()),
+                escapeHtml(firstLine(endpoint.description(), endpoint.summary())),
                 escapeHtml(endpoint.httpMethod()),
                 escapeHtml(endpoint.path()),
                 renderEndpointSections(endpoint)
         );
+    }
+
+    private static String firstLine(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) {
+            return primary;
+        }
+        return fallback == null ? "" : fallback;
     }
 
     private static String renderEndpointSections(GeneratedEndpoint endpoint) {

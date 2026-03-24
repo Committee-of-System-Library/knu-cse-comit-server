@@ -51,6 +51,7 @@ src/main/java/.../payment/
 ### 직접 작성하는 항목
 
 - `summary`
+- `description`
 - `descriptions`
 - `errors`
 - `example.request`
@@ -79,6 +80,7 @@ public interface PaymentControllerApi {
 
     @ApiDoc(
         summary = "결제 조회",
+        description = "주문 ID 기준으로 결제 상태를 조회합니다.",
         descriptions = {
             @FieldDesc(name = "orderId", value = "조회할 주문 ID"),
             @FieldDesc(name = "includeHistory", value = "거래 이력 포함 여부"),
@@ -101,6 +103,7 @@ public interface PaymentControllerApi {
 
     @ApiDoc(
         summary = "결제 승인",
+        description = "결제 승인 요청을 처리합니다.",
         descriptions = {
             @FieldDesc(name = "orderId", value = "주문 ID"),
             @FieldDesc(name = "amount", value = "결제 금액"),
@@ -128,6 +131,7 @@ public interface PaymentControllerApi {
 ```java
 @ApiDoc(
     summary = "게시글 상세 조회",
+    description = "게시글 하나의 상세 정보를 조회합니다.",
     errors = {
         @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
     }

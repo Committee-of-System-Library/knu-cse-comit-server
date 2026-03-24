@@ -13,6 +13,7 @@ record GeneratedApiDocument(
 record GeneratedEndpoint(
         String methodName,
         String summary,
+        String description,
         String httpMethod,
         String path,
         List<FieldDoc> pathParameters,

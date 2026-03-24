@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 public @interface ApiDoc {
     String summary();
 
+    String description() default "";
+
     FieldDesc[] descriptions() default {};
 
     ApiError[] errors() default {};

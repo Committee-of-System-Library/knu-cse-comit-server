@@ -265,7 +265,7 @@
     <span>GET /posts/{postId}/comments</span>
 </a>
 <a href="#toggleHelpful">
-    <strong>댓글 도움이 됐어요 토글</strong>
+    <strong>댓글 도움 토글</strong>
     <span>POST /comments/{commentId}/helpful</span>
 </a>
 <a href="#updateComment">
@@ -277,7 +277,7 @@
         <section class="content"><article class="endpoint" id="createComment">
     <div class="eyebrow">POST</div>
     <h2>댓글 작성</h2>
-    <p>댓글 작성</p>
+    <p>게시글에 새 댓글을 작성합니다.</p>
     <div class="path-box"><span class="method">POST</span>/posts/{postId}/comments</div>
     <div class="section-grid"><section class="card">
     <h3>경로 변수</h3>
@@ -394,12 +394,15 @@
 <section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
-  &quot;content&quot; : &quot;string&quot;
+  &quot;content&quot; : &quot;entity graph도 같이 비교해보면 좋습니다.&quot;
 }</code></pre>
 </section>
 <section class="card">
     <h3>응답 예시</h3>
-    <pre><code>1</code></pre>
+    <pre><code>{
+  &quot;result&quot; : &quot;SUCCESS&quot;,
+  &quot;data&quot; : 201
+}</code></pre>
 </section>
 <section class="card">
     <h3>에러 예시</h3>
@@ -414,7 +417,7 @@
 <article class="endpoint" id="deleteComment">
     <div class="eyebrow">DELETE</div>
     <h2>댓글 삭제</h2>
-    <p>댓글 삭제</p>
+    <p>내가 작성한 댓글을 삭제 상태로 변경합니다.</p>
     <div class="path-box"><span class="method">DELETE</span>/comments/{commentId}</div>
     <div class="section-grid"><section class="card">
     <h3>경로 변수</h3>
@@ -509,7 +512,9 @@
 </section>
 <section class="card">
     <h3>응답 예시</h3>
-    <pre><code>{ }</code></pre>
+    <pre><code>{
+  &quot;result&quot; : &quot;SUCCESS&quot;
+}</code></pre>
 </section>
 <section class="card">
     <h3>에러 예시</h3>
@@ -524,7 +529,7 @@
 <article class="endpoint" id="getComments">
     <div class="eyebrow">GET</div>
     <h2>댓글 목록 조회</h2>
-    <p>댓글 목록 조회</p>
+    <p>게시글에 달린 댓글 목록을 조회합니다.</p>
     <div class="path-box"><span class="method">GET</span>/posts/{postId}/comments</div>
     <div class="section-grid"><section class="card">
     <h3>경로 변수</h3>
@@ -562,7 +567,7 @@
     <td><code>comments</code></td>
     <td><span class="type-chip type-collection">List&lt;CommentResponse&gt;</span></td>
     <td><span class="badge-optional">optional</span></td>
-    <td>-</td>
+    <td>댓글 목록입니다. 각 항목은 댓글 ID, 내용, 작성자, 도움이 됐어요 수, 내 반응 여부, 작성/수정 시각을 포함합니다.</td>
 </tr>
 </tbody>
 </table>
@@ -634,16 +639,19 @@
 <section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
-  &quot;comments&quot; : [ {
-    &quot;authorNickname&quot; : &quot;string&quot;,
-    &quot;content&quot; : &quot;string&quot;,
-    &quot;createdAt&quot; : &quot;2024-01-01T12:00:00&quot;,
-    &quot;helpfulByMe&quot; : true,
-    &quot;helpfulCount&quot; : 1,
-    &quot;id&quot; : 1,
-    &quot;mine&quot; : true,
-    &quot;updatedAt&quot; : &quot;2024-01-01T12:00:00&quot;
-  } ]
+  &quot;result&quot; : &quot;SUCCESS&quot;,
+  &quot;data&quot; : {
+    &quot;comments&quot; : [ {
+      &quot;id&quot; : 201,
+      &quot;content&quot; : &quot;entity graph도 같이 비교해보면 좋습니다.&quot;,
+      &quot;authorNickname&quot; : &quot;orm-master&quot;,
+      &quot;helpfulCount&quot; : 4,
+      &quot;helpfulByMe&quot; : true,
+      &quot;mine&quot; : false,
+      &quot;createdAt&quot; : &quot;2026-03-24T11:00:00&quot;,
+      &quot;updatedAt&quot; : null
+    } ]
+  }
 }</code></pre>
 </section>
 <section class="card">
@@ -658,8 +666,8 @@
 </article>
 <article class="endpoint" id="toggleHelpful">
     <div class="eyebrow">POST</div>
-    <h2>댓글 도움이 됐어요 토글</h2>
-    <p>댓글 도움이 됐어요 토글</p>
+    <h2>댓글 도움 토글</h2>
+    <p>댓글의 도움이 됐어요 상태를 토글합니다.</p>
     <div class="path-box"><span class="method">POST</span>/comments/{commentId}/helpful</div>
     <div class="section-grid"><section class="card">
     <h3>경로 변수</h3>
@@ -769,7 +777,10 @@
 <section class="card">
     <h3>응답 예시</h3>
     <pre><code>{
-  &quot;helpful&quot; : true
+  &quot;result&quot; : &quot;SUCCESS&quot;,
+  &quot;data&quot; : {
+    &quot;helpful&quot; : true
+  }
 }</code></pre>
 </section>
 <section class="card">
@@ -785,7 +796,7 @@
 <article class="endpoint" id="updateComment">
     <div class="eyebrow">PATCH</div>
     <h2>댓글 수정</h2>
-    <p>댓글 수정</p>
+    <p>내가 작성한 댓글의 내용을 수정합니다.</p>
     <div class="path-box"><span class="method">PATCH</span>/comments/{commentId}</div>
     <div class="section-grid"><section class="card">
     <h3>경로 변수</h3>
@@ -902,12 +913,14 @@
 <section class="card">
     <h3>요청 예시</h3>
     <pre><code>{
-  &quot;content&quot; : &quot;string&quot;
+  &quot;content&quot; : &quot;entity graph와 fetch join 차이도 비교해보면 좋겠습니다.&quot;
 }</code></pre>
 </section>
 <section class="card">
     <h3>응답 예시</h3>
-    <pre><code>{ }</code></pre>
+    <pre><code>{
+  &quot;result&quot; : &quot;SUCCESS&quot;
+}</code></pre>
 </section>
 <section class="card">
     <h3>에러 예시</h3>

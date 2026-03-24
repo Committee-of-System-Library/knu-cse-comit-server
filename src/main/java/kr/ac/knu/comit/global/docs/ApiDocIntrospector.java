@@ -136,6 +136,7 @@ final class ApiDocIntrospector {
         return new GeneratedEndpoint(
                 method.getName(),
                 apiDoc.summary(),
+                apiDoc.description(),
                 mappingInfo.httpMethod(),
                 joinPaths(classPath, mappingInfo.path()),
                 requestSpec.pathParameters(),
