@@ -506,9 +506,15 @@ final class ApiDocHtmlRenderer {
             return "";
         }
         return renderFieldCard("에러 응답 필드", List.of(
-                new FieldDoc("result", "String", true, "요청 처리 결과입니다. 에러 응답에서는 FAIL이 내려갑니다."),
-                new FieldDoc("code", "String", true, "비즈니스 에러 코드입니다."),
-                new FieldDoc("message", "String", true, "에러 메시지입니다.")
+                new FieldDoc("type", "String", true, "문제 유형을 식별하는 URI path입니다."),
+                new FieldDoc("title", "String", true, "HTTP 상태를 요약한 제목입니다."),
+                new FieldDoc("status", "Integer", true, "HTTP 상태 코드입니다."),
+                new FieldDoc("detail", "String", true, "클라이언트에 노출할 에러 설명입니다."),
+                new FieldDoc("instance", "String", true, "에러가 발생한 요청 경로입니다."),
+                new FieldDoc("errorCode", "String", true, "프론트엔드 분기에 사용하는 안정적인 에러 코드입니다."),
+                new FieldDoc("invalidFields", "List<ProblemFieldViolation>", false, "validation 에러에서만 포함됩니다. 필드명과 검증 메시지 목록입니다."),
+                new FieldDoc("errorTrackingId", "String", false, "서버 내부 오류에서만 포함됩니다. 로그 추적용 식별자입니다."),
+                new FieldDoc("timestamp", "OffsetDateTime", true, "에러 응답 생성 시각입니다.")
         ));
     }
 
@@ -599,10 +605,10 @@ final class ApiDocHtmlRenderer {
                             <td>%s</td>
                         </tr>
                         """.formatted(
-                        escapeHtml(error.name()),
+                        escapeHtml(error.errorCode()),
                         error.status(),
-                        escapeHtml(error.responseCode()),
-                        escapeHtml(error.message()),
+                        escapeHtml(error.type()),
+                        escapeHtml(error.detail()),
                         escapeHtml(error.when())
                 ))
                 .reduce((left, right) -> left + right)
@@ -612,10 +618,10 @@ final class ApiDocHtmlRenderer {
                 <table>
                     <thead>
                         <tr>
-                            <th>이름</th>
+                            <th>errorCode</th>
                             <th>HTTP 상태</th>
-                            <th>응답 code</th>
-                            <th>메시지</th>
+                            <th>type</th>
+                            <th>detail</th>
                             <th>발생 조건</th>
                         </tr>
                     </thead>

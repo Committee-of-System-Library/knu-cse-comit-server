@@ -47,8 +47,10 @@ class ApiDocGeneratorTest {
         assertThat(postHtml).contains("에러 코드");
         assertThat(postHtml).contains("에러 예시");
         assertThat(postHtml).contains("UNAUTHORIZED");
-        assertThat(postHtml).contains("C001");
+        assertThat(postHtml).contains("INVALID_REQUEST");
         assertThat(postHtml).contains("POST_NOT_FOUND");
-        assertThat(postHtml).contains("P001");
+        assertThat(postHtml).contains("/problems/common/unauthorized");
+        assertThat(postHtml).contains("/problems/post/not-found");
+        assertThat(postHtml).contains("errorCode");
     }
 }

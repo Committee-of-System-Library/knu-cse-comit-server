@@ -8,10 +8,12 @@ import java.io.IOException;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@Profile("local")
 @RequiredArgsConstructor
 public class MemberAuthenticationFilter extends OncePerRequestFilter {
 

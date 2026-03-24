@@ -36,7 +36,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<CommentCountView> countActiveByPostIds(@Param("postIds") List<Long> postIds);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Comment c SET c.helpfulCount = c.helpfulCount + 1 WHERE c.id = :commentId")
+    @Query("""
+            UPDATE Comment c
+            SET c.helpfulCount = c.helpfulCount + 1
+            WHERE c.id = :commentId
+              AND c.deletedAt IS NULL
+            """)
     void incrementHelpfulCount(@Param("commentId") Long commentId);
 
     @Modifying(clearAutomatically = true)
@@ -44,6 +49,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             UPDATE Comment c
             SET c.helpfulCount = c.helpfulCount - 1
             WHERE c.id = :commentId
+              AND c.deletedAt IS NULL
               AND c.helpfulCount > 0
             """)
     void decrementHelpfulCount(@Param("commentId") Long commentId);

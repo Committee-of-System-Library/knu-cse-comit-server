@@ -4,11 +4,13 @@
 
 ## 먼저 볼 문서
 
-- [API 계약 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/api-contract.md)
-- [API 문서 생성기 동작 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/api-doc-generator-flow.md)
-- [Java 주석 규칙](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/java-comment-convention.md)
-- [로컬 실행 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/ops/local-development.md)
-- [ADR-002 ProblemDetail 기반 에러 응답 표준 채택](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/002-problem-detail-error-response.md)
+- [Comit CPS (왜 만드는지 / 누구를 위한 것인지)](./features/comit-cps.md)
+- [API 계약 가이드](./guides/api-contract.md)
+- [API 문서 생성기 동작 가이드](./guides/api-doc-generator-flow.md)
+- [Java 주석 규칙](./guides/java-comment-convention.md)
+- [테스트 전략 가이드](./guides/testing-strategy.md)
+- [로컬 실행 가이드](./ops/local-development.md)
+- [ADR-002 ProblemDetail 기반 에러 응답 표준 채택](./adr/002-problem-detail-error-response.md)
 
 ## 디렉토리 구조
 
@@ -20,9 +22,25 @@
 | `ops/` | 로컬 실행, 배포, 환경변수, 운영 체크리스트 |
 | `api/` | `./gradlew generateApiDocs`로 생성되는 산출물 |
 
-## 문서 갱신 기준
+## 문서 동기화 순서
 
-- 새 API surface를 추가하거나 바꾸면 `guides/api-contract.md`와 `docs/api/`를 함께 본다.
-- 생성기 구조를 바꾸면 `guides/api-doc-generator-flow.md`를 갱신한다.
-- 임시 브리지나 구현 제약을 도입하면 `guides/java-comment-convention.md` 기준으로 Javadoc과 기능 문서를 같이 남긴다.
-- 로컬 실행 방식이나 필수 환경값이 바뀌면 `ops/` 문서를 갱신한다.
+1. 기준 문서를 먼저 고친다.
+   기능 목적/우선순위는 `features/`, 기술 결정은 `adr/`가 원본이다.
+2. 개발 가이드를 맞춘다.
+   API 계약, 생성기 구조, 테스트 전략, 주석 규칙처럼 개발자가 따라야 하는 문서를 갱신한다.
+3. 생성 산출물을 갱신한다.
+   API 계약 또는 생성기 변경이면 `./gradlew generateApiDocs`로 `docs/api/`를 재생성한다.
+4. 인덱스 README를 마지막에 맞춘다.
+   새 문서가 생기거나 문서 성격이 바뀌면 이 파일과 하위 폴더 `README.md`까지 함께 수정한다.
+
+## 변경 유형별 업데이트 대상
+
+| 변경 유형 | 같이 갱신할 문서 |
+|---|---|
+| 제품 방향, 타겟 사용자, MVP 범위 | `features/comit-cps.md`, `features/README.md`, `docs/README.md` |
+| 기능 설계, 흐름, 예외 케이스 | 해당 `features/*.md`, `features/README.md` |
+| 에러 응답 포맷, 에러 코드 체계 | `adr/002-problem-detail-error-response.md`, `guides/api-contract.md`, `docs/api/` |
+| 컨트롤러 계약, DTO, validation | `guides/api-contract.md`, `docs/api/` |
+| API 문서 생성기/어노테이션 규칙 | `guides/api-doc-generator-flow.md`, `docs/api/` |
+| 테스트 전략, 테스트 작성 규칙 | `guides/testing-strategy.md`, `guides/README.md`, `docs/README.md` |
+| 로컬 실행, 배포, 환경 변수 | `ops/` 하위 문서와 해당 `README.md` |

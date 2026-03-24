@@ -9,7 +9,6 @@ import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
 import kr.ac.knu.comit.member.dto.UpdateNicknameRequest;
 import kr.ac.knu.comit.member.dto.UpdateStudentNumberVisibilityRequest;
@@ -33,7 +32,7 @@ public interface MemberControllerApi {
                     @FieldDesc(name = "studentNumberVisible", value = "학번 공개 여부")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
             },
             example = @Example(
                     response = """
@@ -61,8 +60,8 @@ public interface MemberControllerApi {
                     @FieldDesc(name = "nickname", value = "1자 이상 50자 이하의 새 닉네임")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
-                    @ApiError(code = BusinessErrorCode.DUPLICATE_NICKNAME, when = "이미 사용 중인 닉네임으로 변경하려고 할 때")
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
+                    @ApiError(code = "DUPLICATE_NICKNAME", when = "이미 사용 중인 닉네임으로 변경하려고 할 때")
             },
             example = @Example(
                     request = """
@@ -90,7 +89,7 @@ public interface MemberControllerApi {
                     @FieldDesc(name = "visible", value = "true면 학번을 공개하고 false면 비공개합니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
             },
             example = @Example(
                     request = """

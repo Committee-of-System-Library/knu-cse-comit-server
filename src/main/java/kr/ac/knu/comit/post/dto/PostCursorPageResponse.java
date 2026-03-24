@@ -16,10 +16,11 @@ public record PostCursorPageResponse(
         boolean hasNext
 ) {
     public static PostCursorPageResponse of(List<Post> posts, int requestedSize, Map<Long, Integer> commentCounts) {
-        boolean hasNext = posts.size() == requestedSize;
-        Long nextCursorId = hasNext ? posts.get(posts.size() - 1).getId() : null;
+        boolean hasNext = posts.size() > requestedSize;
+        List<Post> visiblePosts = hasNext ? posts.subList(0, requestedSize) : posts;
+        Long nextCursorId = hasNext ? visiblePosts.get(visiblePosts.size() - 1).getId() : null;
         return new PostCursorPageResponse(
-                posts.stream()
+                visiblePosts.stream()
                         .map(post -> PostSummaryResponse.from(post, commentCounts.getOrDefault(post.getId(), 0)))
                         .toList(),
                 nextCursorId,

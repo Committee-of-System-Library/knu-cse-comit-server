@@ -1,7 +1,7 @@
 package kr.ac.knu.comit.global.auth;
 
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -33,9 +33,9 @@ public class MemberArgumentResolver implements HandlerMethodArgumentResolver {
                                            NativeWebRequest webRequest,
                                            WebDataBinderFactory binderFactory) {
         Object principal = webRequest.getAttribute(PRINCIPAL_ATTRIBUTE, NativeWebRequest.SCOPE_REQUEST);
-        if (principal == null) {
-            throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
+        if (!(principal instanceof MemberPrincipal memberPrincipal)) {
+            throw new BusinessException(CommonErrorCode.UNAUTHORIZED);
         }
-        return (MemberPrincipal) principal;
+        return memberPrincipal;
     }
 }

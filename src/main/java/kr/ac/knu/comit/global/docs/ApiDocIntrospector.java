@@ -36,7 +36,10 @@ import kr.ac.knu.comit.global.docs.annotation.ApiDoc;
 import kr.ac.knu.comit.global.docs.annotation.Example;
 import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.exception.ApiResponse;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
+import kr.ac.knu.comit.global.exception.ErrorCode;
+import kr.ac.knu.comit.global.exception.ErrorCodeRegistry;
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -60,6 +63,7 @@ import org.springframework.web.bind.annotation.ValueConstants;
 final class ApiDocIntrospector {
 
     private static final String DEFAULT_UNAUTHORIZED_WHEN = "인증 정보가 없거나 유효한 회원을 식별할 수 없을 때";
+    private static final String DEFAULT_INVALID_REQUEST_WHEN = "요청 파라미터 또는 본문이 검증 규칙을 만족하지 않을 때";
 
     private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
             .findAndAddModules()
@@ -133,12 +137,13 @@ final class ApiDocIntrospector {
         List<ErrorDoc> errors = resolveErrors(method, apiDoc.errors());
 
         Example example = apiDoc.example();
+        String endpointPath = joinPaths(classPath, mappingInfo.path());
         return new GeneratedEndpoint(
                 method.getName(),
                 apiDoc.summary(),
                 apiDoc.description(),
                 mappingInfo.httpMethod(),
-                joinPaths(classPath, mappingInfo.path()),
+                endpointPath,
                 requestSpec.pathParameters(),
                 requestSpec.queryParameters(),
                 extractFields(requestSpec.requestBodyType(), descriptions),
@@ -146,7 +151,7 @@ final class ApiDocIntrospector {
                 errors,
                 resolveExample(example.request(), requestSpec.requestBodyType()),
                 resolveExample(example.response(), responseType),
-                resolveErrorExample(errors)
+                resolveErrorExample(errors, endpointPath)
         );
     }
 
@@ -395,22 +400,29 @@ final class ApiDocIntrospector {
     }
 
     private List<ErrorDoc> resolveErrors(Method method, ApiError[] declaredErrors) {
-        LinkedHashMap<BusinessErrorCode, ErrorDoc> errors = new LinkedHashMap<>();
+        LinkedHashMap<String, ErrorDoc> errors = new LinkedHashMap<>();
 
         if (hasAuthenticatedMemberParameter(method)) {
             errors.put(
-                    BusinessErrorCode.UNAUTHORIZED,
-                    toErrorDoc(BusinessErrorCode.UNAUTHORIZED, DEFAULT_UNAUTHORIZED_WHEN)
+                    CommonErrorCode.UNAUTHORIZED.getCode(),
+                    toErrorDoc(CommonErrorCode.UNAUTHORIZED, DEFAULT_UNAUTHORIZED_WHEN)
+            );
+        }
+
+        if (hasValidationInput(method)) {
+            errors.put(
+                    CommonErrorCode.INVALID_REQUEST.getCode(),
+                    toErrorDoc(CommonErrorCode.INVALID_REQUEST, DEFAULT_INVALID_REQUEST_WHEN)
             );
         }
 
         for (ApiError declaredError : declaredErrors) {
-            BusinessErrorCode code = declaredError.code();
-            ErrorDoc existing = errors.get(code);
+            ErrorCode code = ErrorCodeRegistry.require(declaredError.code());
+            ErrorDoc existing = errors.get(code.getCode());
             String when = StringUtils.hasText(declaredError.when())
                     ? declaredError.when()
                     : existing == null ? "-" : existing.when();
-            errors.put(code, toErrorDoc(code, when));
+            errors.put(code.getCode(), toErrorDoc(code, when));
         }
 
         return List.copyOf(errors.values());
@@ -421,26 +433,46 @@ final class ApiDocIntrospector {
                 .anyMatch(parameter -> parameter.isAnnotationPresent(AuthenticatedMember.class));
     }
 
-    private ErrorDoc toErrorDoc(BusinessErrorCode code, String when) {
+    private boolean hasValidationInput(Method method) {
+        return Arrays.stream(method.getParameters())
+                .anyMatch(parameter -> Arrays.stream(parameter.getAnnotations())
+                        .map(Annotation::annotationType)
+                        .anyMatch(annotationType ->
+                                annotationType.getSimpleName().equals("Valid")
+                                        || annotationType.getSimpleName().equals("Validated")
+                                        || annotationType.getPackageName().startsWith("jakarta.validation.constraints")));
+    }
+
+    private ErrorDoc toErrorDoc(ErrorCode code, String when) {
         return new ErrorDoc(
-                code.name(),
                 code.getCode(),
                 code.getStatus(),
+                code.getType(),
                 code.getMessage(),
                 StringUtils.hasText(when) ? when : "-"
         );
     }
 
-    private String resolveErrorExample(List<ErrorDoc> errors) {
+    private String resolveErrorExample(List<ErrorDoc> errors, String endpointPath) {
         if (errors.isEmpty()) {
             return "";
         }
 
         ErrorDoc primary = errors.getFirst();
         LinkedHashMap<String, Object> example = new LinkedHashMap<>();
-        example.put("result", "FAIL");
-        example.put("code", primary.responseCode());
-        example.put("message", primary.message());
+        example.put("type", primary.type());
+        example.put("title", HttpStatus.valueOf(primary.status()).getReasonPhrase());
+        example.put("status", primary.status());
+        example.put("detail", primary.detail());
+        example.put("instance", endpointPath);
+        example.put("errorCode", primary.errorCode());
+        if (CommonErrorCode.INVALID_REQUEST.getCode().equals(primary.errorCode())) {
+            example.put("invalidFields", List.of(Map.of(
+                    "field", "fieldName",
+                    "message", "유효하지 않은 입력값입니다."
+            )));
+        }
+        example.put("timestamp", "2026-03-24T03:10:00Z");
         return writeJson(example);
     }
 

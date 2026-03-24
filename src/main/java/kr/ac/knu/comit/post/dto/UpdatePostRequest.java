@@ -14,7 +14,10 @@ public record UpdatePostRequest(
         String content,
 
         @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
-        List<String> tags
+        List<
+                @NotBlank(message = "태그는 비어 있을 수 없습니다.")
+                @Size(max = 20, message = "태그는 20자 이하이어야 합니다.")
+                String> tags
 ) {
     public List<String> tags() {
         return tags == null ? List.of() : tags;

@@ -36,10 +36,10 @@ record FieldDoc(
 }
 
 record ErrorDoc(
-        String name,
-        String responseCode,
+        String errorCode,
         int status,
-        String message,
+        String type,
+        String detail,
         String when
 ) {
 }

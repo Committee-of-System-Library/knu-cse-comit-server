@@ -1,7 +1,8 @@
 package kr.ac.knu.comit.post.service;
 
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.comment.service.CommentQueryService;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
@@ -34,8 +35,11 @@ public class PostService {
      * 서비스 메서드가 위에서 아래로 읽히는 흐름을 유지한다.
      */
     public PostCursorPageResponse getPosts(BoardType boardType, Long cursorId, int size) {
+        if (size <= 0) {
+            throw new BusinessException(CommonErrorCode.INVALID_REQUEST);
+        }
         int pageSize = Math.min(size, DEFAULT_PAGE_SIZE);
-        PageRequest pageable = PageRequest.of(0, pageSize);
+        PageRequest pageable = PageRequest.of(0, pageSize + 1);
 
         List<Post> posts = (cursorId == null)
                 ? postRepository.findFirstPage(boardType, pageable)
@@ -74,7 +78,7 @@ public class PostService {
         Post post = findPostOrThrow(postId);
 
         if (!post.isWrittenBy(memberId) && !admin) {
-            throw new BusinessException(BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
         post.delete();
     }
@@ -107,12 +111,12 @@ public class PostService {
 
     private Post findPostOrThrow(Long postId) {
         return postRepository.findActiveById(postId)
-                .orElseThrow(() -> new BusinessException(BusinessErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
     }
 
     private void checkOwnership(Post post, Long memberId) {
         if (!post.isWrittenBy(memberId)) {
-            throw new BusinessException(BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
     }
 }

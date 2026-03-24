@@ -7,9 +7,12 @@ AI 에이전트(Claude, Cursor, Copilot 등)가 이 프로젝트에서 일관된
 
 ## 프로젝트 개요
 
-**Comit** — 경북대학교 컴퓨터학부 동아리 서버 백엔드
+**Comit** — 경북대학교 컴퓨터학부 인증 기반 커뮤니티 플랫폼 백엔드
 - 그룹: `kr.ac.knu`
 - 패키지 루트: `kr.ac.knu.comit`
+
+> **왜 만드는지, 누구를 위한 것인지 → [`docs/features/comit-cps.md`](docs/features/comit-cps.md)**
+> 코드 기여, 기능 판단, 우선순위 결정 전에 반드시 읽을 것.
 
 ---
 
@@ -71,7 +74,8 @@ kr.ac.knu.comit/
 
 ### 예외
 - 예외는 `global/exception/` 하위에서 공통 처리
-- 비즈니스 예외는 `BusinessException` + `BusinessErrorCode`로 관리
+- 비즈니스 예외는 `BusinessException` + 도메인별 `ErrorCode` (`CommonErrorCode`, `MemberErrorCode`, `PostErrorCode`, `CommentErrorCode`)로 관리
+- 외부 에러 응답은 `ProblemDetail` 표준을 사용하며 세부 포맷은 `docs/adr/002-problem-detail-error-response.md`를 따른다.
 
 ### Entity 설계
 - `@NoArgsConstructor(access = PROTECTED)` 필수 — 외부 직접 생성 금지
@@ -110,6 +114,35 @@ kr.ac.knu.comit/
 
 ---
 
+## 문서 동기화 순서
+
+코드 변경이 생기면 문서는 아래 순서로 함께 갱신한다.
+
+1. 변경의 성격을 먼저 분류한다.
+   기능 맥락 변경 / 기술 결정 변경 / API 계약 변경 / 문서 생성기 변경 / 테스트 전략 변경 / 운영 변경
+2. 기준 문서를 먼저 갱신한다.
+   기능 방향은 `docs/features/`, 기술 결정은 `docs/adr/`를 우선 수정한다.
+3. 개발 가이드를 갱신한다.
+   API 계약은 `docs/guides/api-contract.md`, 생성기 동작은 `docs/guides/api-doc-generator-flow.md`, 테스트 원칙은 `docs/guides/testing-strategy.md`를 본다.
+4. 산출물을 재생성한다.
+   API 계약이나 생성기 관련 변경이면 `./gradlew generateApiDocs`를 실행해 `docs/api/`를 갱신한다.
+5. 인덱스 문서를 마지막에 맞춘다.
+   새 문서가 생기거나 문서 성격이 바뀌면 `docs/README.md`, 각 하위 폴더의 `README.md`를 함께 갱신한다.
+
+### 변경 유형별로 같이 봐야 하는 문서
+
+| 변경 유형 | 반드시 검토할 문서 |
+|---|---|
+| 제품 방향, 우선순위, 왜 만드는지 | `docs/features/comit-cps.md`, `docs/features/README.md`, `docs/README.md` |
+| 기능 설계, 예외 케이스, 도메인 흐름 | 해당 `docs/features/*.md`, `docs/features/README.md`, 필요 시 관련 ADR |
+| 에러 응답 포맷, 에러 코드 체계 | `docs/adr/002-problem-detail-error-response.md`, `docs/guides/api-contract.md`, `docs/api/` |
+| 컨트롤러 계약, DTO, validation, 인증 주입 | `docs/guides/api-contract.md`, `docs/api/` |
+| API 문서 생성기 로직, 어노테이션 규칙 | `docs/guides/api-doc-generator-flow.md`, `docs/api/`, `docs/README.md` |
+| 테스트 전략, 테스트 레벨, 네이밍 | `docs/guides/testing-strategy.md`, `docs/guides/README.md`, `docs/README.md` |
+| 로컬 실행, 배포, 환경 변수, 운영 절차 | `docs/ops/` 하위 문서와 해당 `README.md` |
+
+---
+
 ## 브랜치 / 커밋 컨벤션
 
 - 브랜치: `feat/#이슈번호`, `fix/#이슈번호`, `refactor/#이슈번호`
@@ -143,3 +176,4 @@ kr.ac.knu.comit/
 | 번호 | 제목 | 상태 |
 |---|---|---|
 | ADR-001 | API 문서 자동화 방식 선택 | 채택 |
+| ADR-002 | ProblemDetail 기반 에러 응답 표준 채택 | 채택 |

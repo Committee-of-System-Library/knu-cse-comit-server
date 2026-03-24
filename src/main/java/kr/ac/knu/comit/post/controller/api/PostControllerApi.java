@@ -8,7 +8,6 @@ import kr.ac.knu.comit.global.docs.annotation.FieldDesc;
 import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.post.domain.BoardType;
 import kr.ac.knu.comit.post.dto.*;
 import jakarta.validation.Valid;
@@ -29,6 +28,9 @@ public interface PostControllerApi {
                     @FieldDesc(name = "posts", value = "게시글 요약 목록입니다. 각 항목은 게시글 ID, 제목, 작성자, 좋아요 수, 댓글 수, 태그, 작성 시각을 포함합니다."),
                     @FieldDesc(name = "nextCursorId", value = "다음 페이지 조회에 사용할 cursor ID입니다. 마지막 페이지면 null입니다."),
                     @FieldDesc(name = "hasNext", value = "다음 페이지 존재 여부입니다.")
+            },
+            errors = {
+                    @ApiError(code = "INVALID_REQUEST", when = "size가 1 이상이 아닐 때")
             },
             example = @Example(
                     response = """
@@ -82,7 +84,7 @@ public interface PostControllerApi {
                     @FieldDesc(name = "updatedAt", value = "마지막 수정 시각입니다. 수정 이력이 없으면 null입니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
+                    @ApiError(code = "POST_NOT_FOUND", when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
             },
             example = @Example(
                     response = """
@@ -123,8 +125,8 @@ public interface PostControllerApi {
                     @FieldDesc(name = "tags", value = "선택 항목입니다. 최대 5개, 각 20자 이하입니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.MEMBER_NOT_FOUND, when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
-                    @ApiError(code = BusinessErrorCode.INVALID_TAG, when = "태그 길이가 도메인 규칙을 벗어날 때")
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때"),
+                    @ApiError(code = "INVALID_TAG", when = "태그 길이가 도메인 규칙을 벗어날 때")
             },
             example = @Example(
                     request = """
@@ -162,9 +164,9 @@ public interface PostControllerApi {
                     @FieldDesc(name = "tags", value = "수정할 태그 목록입니다. null이면 빈 목록으로 처리합니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "수정 대상 게시글이 없거나 삭제된 상태일 때"),
-                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자가 아닌 사용자가 수정하려고 할 때"),
-                    @ApiError(code = BusinessErrorCode.INVALID_TAG, when = "태그 길이가 도메인 규칙을 벗어날 때")
+                    @ApiError(code = "POST_NOT_FOUND", when = "수정 대상 게시글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = "FORBIDDEN", when = "작성자가 아닌 사용자가 수정하려고 할 때"),
+                    @ApiError(code = "INVALID_TAG", when = "태그 길이가 도메인 규칙을 벗어날 때")
             },
             example = @Example(
                     request = """
@@ -198,8 +200,8 @@ public interface PostControllerApi {
                     @FieldDesc(name = "postId", value = "삭제할 게시글 ID입니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "삭제 대상 게시글이 없거나 삭제된 상태일 때"),
-                    @ApiError(code = BusinessErrorCode.FORBIDDEN, when = "작성자 또는 관리자 권한 없이 삭제하려고 할 때")
+                    @ApiError(code = "POST_NOT_FOUND", when = "삭제 대상 게시글이 없거나 삭제된 상태일 때"),
+                    @ApiError(code = "FORBIDDEN", when = "작성자 또는 관리자 권한 없이 삭제하려고 할 때")
             },
             example = @Example(
                     response = """
@@ -223,7 +225,7 @@ public interface PostControllerApi {
                     @FieldDesc(name = "liked", value = "true면 좋아요가 추가되고 false면 좋아요가 취소됩니다.")
             },
             errors = {
-                    @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "좋아요를 누를 게시글이 없거나 삭제된 상태일 때")
+                    @ApiError(code = "POST_NOT_FOUND", when = "좋아요를 누를 게시글이 없거나 삭제된 상태일 때")
             },
             example = @Example(
                     response = """

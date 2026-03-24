@@ -1,8 +1,8 @@
 package kr.ac.knu.comit.member.domain;
 
 import jakarta.persistence.*;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.MemberErrorCode;
 
 import java.time.LocalDateTime;
 
@@ -93,7 +93,7 @@ public class Member {
 
     private static void validateNickname(String nickname) {
         if (nickname == null || nickname.isBlank() || nickname.length() > 50) {
-            throw new BusinessException(BusinessErrorCode.INVALID_NICKNAME);
+            throw new BusinessException(MemberErrorCode.INVALID_NICKNAME);
         }
     }
 

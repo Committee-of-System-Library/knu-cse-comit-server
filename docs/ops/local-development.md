@@ -14,9 +14,9 @@
 
 관련 파일
 
-- [application-local.yml](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/resources/application-local.yml)
-- [compose.local.yml](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/compose.local.yml)
-- [.env.local.example](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/.env.local.example)
+- [application-local.yml](../../src/main/resources/application-local.yml)
+- [compose.local.yml](../../compose.local.yml)
+- [.env.local.example](../../.env.local.example)
 
 ## 실행 순서
 
@@ -44,7 +44,7 @@ docker compose -f compose.local.yml down
 
 ## 인증 방식
 
-실제 KNU CSE SSO starter 연동 전까지는 [MemberAuthenticationFilter.java](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/src/main/java/kr/ac/knu/comit/global/auth/MemberAuthenticationFilter.java)가 요청 헤더를 읽어 임시 인증 컨텍스트를 만든다.
+실제 KNU CSE SSO starter 연동 전까지는 [MemberAuthenticationFilter.java](../../src/main/java/kr/ac/knu/comit/global/auth/MemberAuthenticationFilter.java)가 `local` 프로필에서만 요청 헤더를 읽어 임시 인증 컨텍스트를 만든다.
 
 현재 사용하는 헤더
 

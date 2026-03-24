@@ -1,14 +1,15 @@
 package kr.ac.knu.comit.member.service;
 
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.MemberErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.domain.MemberRepository;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
 import kr.ac.knu.comit.member.dto.UpdateNicknameRequest;
 import kr.ac.knu.comit.member.dto.UpdateStudentNumberVisibilityRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,17 +34,18 @@ public class MemberService {
     public Member findOrCreateBySso(MemberPrincipal principal) {
         return memberRepository.findBySsoSubAndDeletedAtIsNull(principal.ssoSub())
                 .map(member -> syncStudentNumber(member, principal.studentNumber()))
-                .orElseGet(() -> memberRepository.save(
-                        Member.create(principal.ssoSub(), principal.name(), principal.studentNumber())
-                ));
+                .orElseGet(() -> createOrLoadMember(principal));
     }
 
     @Transactional
     public void updateNickname(Long memberId, UpdateNicknameRequest request) {
-        if (memberRepository.existsByNickname(request.nickname())) {
-            throw new BusinessException(BusinessErrorCode.DUPLICATE_NICKNAME);
-        }
         Member member = findMemberOrThrow(memberId);
+        if (member.getNickname().equals(request.nickname())) {
+            return;
+        }
+        if (memberRepository.existsByNicknameAndIdNot(request.nickname(), memberId)) {
+            throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
+        }
         member.updateNickname(request.nickname());
     }
 
@@ -55,11 +57,23 @@ public class MemberService {
     public Member findMemberOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
                 .filter(m -> !m.isDeleted())
-                .orElseThrow(() -> new BusinessException(BusinessErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Member syncStudentNumber(Member member, String studentNumber) {
         member.syncStudentNumber(studentNumber);
         return member;
+    }
+
+    private Member createOrLoadMember(MemberPrincipal principal) {
+        try {
+            return memberRepository.saveAndFlush(
+                    Member.create(principal.ssoSub(), principal.name(), principal.studentNumber())
+            );
+        } catch (DataIntegrityViolationException exception) {
+            return memberRepository.findBySsoSubAndDeletedAtIsNull(principal.ssoSub())
+                    .map(member -> syncStudentNumber(member, principal.studentNumber()))
+                    .orElseThrow(() -> exception);
+        }
     }
 }

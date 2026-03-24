@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommentErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.post.domain.Post;
 
@@ -102,7 +102,7 @@ public class Comment {
 
     private static void validateContent(String content) {
         if (content == null || content.isBlank()) {
-            throw new BusinessException(BusinessErrorCode.INVALID_COMMENT_CONTENT);
+            throw new BusinessException(CommentErrorCode.INVALID_COMMENT_CONTENT);
         }
     }
 }

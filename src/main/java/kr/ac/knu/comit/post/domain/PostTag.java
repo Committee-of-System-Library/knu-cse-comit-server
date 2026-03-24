@@ -1,8 +1,8 @@
 package kr.ac.knu.comit.post.domain;
 
 import jakarta.persistence.*;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
 
 @Entity
 @Table(name = "post_tag")
@@ -32,7 +32,7 @@ public class PostTag {
 
     static void validateName(String name) {
         if (name == null || name.isBlank() || name.strip().length() > 20) {
-            throw new BusinessException(BusinessErrorCode.INVALID_TAG);
+            throw new BusinessException(PostErrorCode.INVALID_TAG);
         }
     }
 

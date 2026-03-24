@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,6 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
         MemberAuthenticationFilter.class,
         GlobalExceptionHandler.class
 })
+@ActiveProfiles("local")
 class AuthenticatedApiWebTest {
 
     @Autowired
@@ -76,7 +78,9 @@ class AuthenticatedApiWebTest {
     void returnsUnauthorizedWhenAuthenticationHeaderIsMissing() throws Exception {
         mockMvc.perform(get("/members/me"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("C001"));
+                .andExpect(jsonPath("$.type").value("/problems/common/unauthorized"))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
     }
 
     @Test
@@ -129,7 +133,10 @@ class AuthenticatedApiWebTest {
                                   "nickname": ""
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("/problems/common/invalid-request"))
+                .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.invalidFields[0].field").value("nickname"));
     }
 
     private Member authenticatedMember() {

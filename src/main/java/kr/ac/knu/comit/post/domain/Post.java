@@ -1,8 +1,8 @@
 package kr.ac.knu.comit.post.domain;
 
 import jakarta.persistence.*;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 
 import java.time.LocalDateTime;
@@ -54,9 +54,10 @@ public class Post {
      */
     public static Post create(Member author, BoardType boardType, String title, String content,
                               List<String> tagNames) {
+        List<String> normalizedTagNames = normalizeTagNames(tagNames);
         validateTitle(title);
         validateContent(content);
-        validateTagNames(tagNames);
+        validateTagNames(normalizedTagNames);
 
         Post post = new Post();
         post.member = author;
@@ -65,7 +66,7 @@ public class Post {
         post.content = content;
         post.createdAt = LocalDateTime.now();
 
-        tagNames.forEach(name -> post.tags.add(PostTag.of(post, name)));
+        normalizedTagNames.forEach(name -> post.tags.add(PostTag.of(post, name)));
         return post;
     }
 
@@ -75,15 +76,16 @@ public class Post {
      * @implNote 태그는 통째로 교체한다. 기존 row 정리는 orphan removal에 맡긴다.
      */
     public void update(String title, String content, List<String> tagNames) {
+        List<String> normalizedTagNames = normalizeTagNames(tagNames);
         validateTitle(title);
         validateContent(content);
-        validateTagNames(tagNames);
+        validateTagNames(normalizedTagNames);
 
         this.title = title;
         this.content = content;
         this.updatedAt = LocalDateTime.now();
         this.tags.clear();
-        tagNames.forEach(name -> this.tags.add(PostTag.of(this, name)));
+        normalizedTagNames.forEach(name -> this.tags.add(PostTag.of(this, name)));
     }
 
     public void delete() {
@@ -139,21 +141,25 @@ public class Post {
 
     private static void validateTitle(String title) {
         if (title == null || title.isBlank() || title.length() > 255) {
-            throw new BusinessException(BusinessErrorCode.INVALID_TITLE);
+            throw new BusinessException(PostErrorCode.INVALID_TITLE);
         }
     }
 
     private static void validateContent(String content) {
         if (content == null || content.isBlank()) {
-            throw new BusinessException(BusinessErrorCode.INVALID_CONTENT);
+            throw new BusinessException(PostErrorCode.INVALID_CONTENT);
         }
     }
 
     private static void validateTagNames(List<String> tagNames) {
         if (tagNames == null) return;
         if (tagNames.size() > 5) {
-            throw new BusinessException(BusinessErrorCode.TAG_LIMIT_EXCEEDED);
+            throw new BusinessException(PostErrorCode.TAG_LIMIT_EXCEEDED);
         }
         tagNames.forEach(PostTag::validateName);
+    }
+
+    private static List<String> normalizeTagNames(List<String> tagNames) {
+        return tagNames == null ? List.of() : tagNames;
     }
 }

@@ -10,8 +10,9 @@ import kr.ac.knu.comit.comment.dto.CommentResponse;
 import kr.ac.knu.comit.comment.dto.CreateCommentRequest;
 import kr.ac.knu.comit.comment.dto.HelpfulToggleResponse;
 import kr.ac.knu.comit.comment.dto.UpdateCommentRequest;
-import kr.ac.knu.comit.global.exception.BusinessErrorCode;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommentErrorCode;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
 import kr.ac.knu.comit.post.domain.Post;
@@ -92,12 +93,12 @@ public class CommentService {
 
     private Comment findCommentOrThrow(Long commentId) {
         return commentRepository.findActiveById(commentId)
-                .orElseThrow(() -> new BusinessException(BusinessErrorCode.COMMENT_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
     private void checkOwnership(Comment comment, Long memberId) {
         if (!comment.isWrittenBy(memberId)) {
-            throw new BusinessException(BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
     }
 }

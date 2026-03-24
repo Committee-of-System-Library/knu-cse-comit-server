@@ -3,7 +3,7 @@
 `@ApiContract` 방식은 "문서 정의"와 "컨트롤러 로직"을 분리하기 위한 규칙이다.  
 개발자는 인터페이스에 라우팅과 문서만 작성하고, 구현체에는 비즈니스 로직만 남긴다.
 
-관련 배경은 [ADR-001](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/001-api-doc-automation.md)에 정리되어 있다.
+관련 배경은 [ADR-001 API 문서 자동화 방식 선택](../adr/001-api-doc-automation.md)에 정리되어 있다.
 
 현재 문서 관련 어노테이션은 `kr.ac.knu.comit.global.docs.annotation` 패키지에 있다.
 
@@ -124,7 +124,7 @@ public interface PaymentControllerApi {
 - 비즈니스 에러 코드는 `errors`에 직접 적는다.
 - `when`에는 "어떤 상황에서 이 코드가 내려가는지"만 짧게 적는다.
 - `@AuthenticatedMember`가 있는 엔드포인트는 `UNAUTHORIZED`가 자동 포함되므로 보통 직접 적지 않아도 된다.
-- validation 실패처럼 현재 구현상 `code` 없이 내려가는 에러는 이 섹션의 대상이 아니다.
+- `@Valid`나 Bean Validation 제약이 걸린 입력이 있으면 `INVALID_REQUEST`가 자동 포함된다.
 
 예시
 
@@ -133,10 +133,12 @@ public interface PaymentControllerApi {
     summary = "게시글 상세 조회",
     description = "게시글 하나의 상세 정보를 조회합니다.",
     errors = {
-        @ApiError(code = BusinessErrorCode.POST_NOT_FOUND, when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
+        @ApiError(code = "POST_NOT_FOUND", when = "조회 대상 게시글이 없거나 삭제된 상태일 때")
     }
 )
 ```
+
+에러 응답은 런타임에서 `ProblemDetail` 형태로 내려간다. 문서의 `에러 코드` 표에 보이는 `errorCode` 값이 그대로 응답 본문 `errorCode`에 들어간다.
 
 ## descriptions 작성 규칙
 
@@ -250,5 +252,5 @@ PR에서는 다음 순서로 검증한다.
 
 ## 같이 읽으면 좋은 문서
 
-- [ADR-001 API 문서 자동화 방식 선택](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/001-api-doc-automation.md)
-- [API 문서 생성기 동작 가이드](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/guides/api-doc-generator-flow.md)
+- [ADR-001 API 문서 자동화 방식 선택](../adr/001-api-doc-automation.md)
+- [API 문서 생성기 동작 가이드](./api-doc-generator-flow.md)

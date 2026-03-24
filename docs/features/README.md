@@ -17,8 +17,10 @@
 
 ## 현재 문서
 
-현재 별도 기능 설계 문서는 없다.
-ProblemDetail 에러 응답 설계는 [ADR-002](/Users/bohyeong/IdeaProjects/knu-cse-comit-server/docs/adr/002-problem-detail-error-response.md)로 승격했다.
+- [comit-cps.md](./comit-cps.md)
+  Comit의 타겟 사용자, 해결하려는 문제, MVP 범위와 우선순위 판단 기준
+
+ProblemDetail 에러 응답 설계는 기능 문서가 아니라 [ADR-002](../adr/002-problem-detail-error-response.md)로 관리한다.
 
 ## 템플릿
 

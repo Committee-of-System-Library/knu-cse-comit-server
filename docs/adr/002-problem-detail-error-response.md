@@ -17,11 +17,12 @@
 
 ## 결정
 
-Spring Boot 4의 `ProblemDetail`을 기준으로 에러 응답 표준을 통일한다.
+Spring Framework 6 / Spring Boot 3부터 제공되는 `ProblemDetail`을 기준으로 에러 응답 표준을 통일한다.
 
 ### 기본 원칙
 
 - 에러 응답은 RFC 9457 기본 필드 `type`, `title`, `status`, `detail`, `instance`를 유지한다.
+- `type`은 배포 환경에 종속되지 않도록 `/problems/...` 형태의 상대 경로 URI를 사용한다.
 - 프론트엔드 분기와 로그 검색을 위해 `errorCode`를 확장 필드로 추가한다.
 - validation 에러는 `invalidFields[]` 배열로 필드 단위 정보를 노출한다.
 - 시스템 에러는 `errorTrackingId`를 포함해 서버 로그와 연결한다.
@@ -66,7 +67,7 @@ controller
 
 ```json
 {
-  "type": "https://api.comit.kr/problems/member/duplicate-nickname",
+  "type": "/problems/member/duplicate-nickname",
   "title": "Conflict",
   "status": 409,
   "detail": "이미 사용 중인 닉네임입니다.",
@@ -80,7 +81,7 @@ Validation 에러:
 
 ```json
 {
-  "type": "https://api.comit.kr/problems/common/invalid-request",
+  "type": "/problems/common/invalid-request",
   "title": "Bad Request",
   "status": 400,
   "detail": "입력값이 올바르지 않습니다.",
@@ -100,7 +101,7 @@ Validation 에러:
 
 ```json
 {
-  "type": "https://api.comit.kr/problems/common/internal-server-error",
+  "type": "/problems/common/internal-server-error",
   "title": "Internal Server Error",
   "status": 500,
   "detail": "서버 내부 오류가 발생했습니다. 관리자에게 문의해주세요.",
@@ -143,17 +144,17 @@ Validation 에러:
 
 ## 후속 작업
 
-1. `ErrorCode` 계약을 `ProblemDetail` 기준 필드까지 확장한다.
-2. `GlobalExceptionHandler`에서 `ApiResponse.error(...)` 대신 `ProblemDetail`을 반환한다.
-3. validation 에러를 `invalidFields` 배열 구조로 표준화한다.
-4. 500 에러에 `errorTrackingId`를 추가하고 서버 로그와 연결한다.
-5. API 문서 예시를 새 에러 포맷 기준으로 갱신한다.
+1. `ErrorCode` 계약을 `ProblemDetail` 기준 필드까지 확장한다. 완료
+2. `GlobalExceptionHandler`에서 `ApiResponse.error(...)` 대신 `ProblemDetail`을 반환한다. 완료
+3. validation 에러를 `invalidFields` 배열 구조로 표준화한다. 완료
+4. 500 에러에 `errorTrackingId`를 추가하고 서버 로그와 연결한다. 완료
+5. API 문서 예시를 새 에러 포맷 기준으로 갱신한다. 완료
+6. 공통/도메인별 `*ErrorCode` enum 분리를 적용한다. 완료
 
 ---
 
 ## 남은 결정사항
 
-- `type` URI를 절대 URL로 둘지, 상대 경로(`/problems/...`)로 둘지
 - 성공 응답을 지금처럼 `ApiResponse`로 유지할지, 성공도 별도 표준 포맷으로 맞출지
 - `errorTrackingId`를 MDC 기반으로 만들지, 핸들러에서 UUID를 즉시 생성할지
 - 실제 SSO starter 연동 이후 인증/인가 에러 코드를 어느 도메인 enum에 둘지
