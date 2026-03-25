@@ -78,6 +78,7 @@ public interface PostControllerApi {
                     @FieldDesc(name = "content", value = "게시글 본문입니다."),
                     @FieldDesc(name = "authorNickname", value = "게시글 작성자의 닉네임입니다."),
                     @FieldDesc(name = "likeCount", value = "현재 게시글의 좋아요 수입니다."),
+                    @FieldDesc(name = "viewCount", value = "현재 게시글의 누적 조회수입니다."),
                     @FieldDesc(name = "likedByMe", value = "현재 로그인한 사용자의 좋아요 여부입니다."),
                     @FieldDesc(name = "tags", value = "게시글에 연결된 태그 목록입니다."),
                     @FieldDesc(name = "createdAt", value = "게시글 생성 시각입니다."),
@@ -97,6 +98,7 @@ public interface PostControllerApi {
                                 "content": "join fetch와 entity graph 차이가 궁금합니다.",
                                 "authorNickname": "backend-dev",
                                 "likeCount": 3,
+                                "viewCount": 128,
                                 "likedByMe": true,
                                 "tags": [
                                   "spring",

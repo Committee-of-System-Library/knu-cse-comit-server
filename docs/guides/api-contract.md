@@ -208,6 +208,7 @@ PR에서는 다음 순서로 검증한다.
 - QueryDSL 결과는 서비스나 리포지토리에서 DTO로 변환한다
 - 응답 래퍼가 필요하면 `ApiResponse<T>`처럼 명시적 제네릭 래퍼만 사용한다
 - `Page<T>`를 직접 반환하기보다 `PageResponse<T>` 같은 DTO로 감싼다
+- 공개 응답 필드가 바뀌면 `example.response`와 `docs/api/` 산출물을 같이 갱신한다
 
 ## 비권장 패턴
 

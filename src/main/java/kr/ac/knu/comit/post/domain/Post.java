@@ -34,6 +34,9 @@ public class Post {
     @Column(nullable = false)
     private int likeCount = 0;
 
+    @Column(nullable = false)
+    private int viewCount = 0;
+
     /**
      * 태그는 게시글 생명주기를 따르며, 수정 시 전체 교체된다.
      */
@@ -125,6 +128,10 @@ public class Post {
 
     public int getLikeCount() {
         return likeCount;
+    }
+
+    public int getViewCount() {
+        return viewCount;
     }
 
     public List<PostTag> getTags() {

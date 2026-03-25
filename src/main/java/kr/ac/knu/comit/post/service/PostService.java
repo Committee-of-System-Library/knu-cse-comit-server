@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -21,9 +23,11 @@ import java.util.List;
 public class PostService {
 
     private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostDailyVisitorRepository postDailyVisitorRepository;
     private final MemberService memberService;
     private final CommentQueryService commentQueryService;
 
@@ -52,8 +56,12 @@ public class PostService {
         );
     }
 
+    @Transactional
     public PostDetailResponse getPost(Long postId, Long memberId) {
+        findPostOrThrow(postId);
+        postRepository.incrementViewCount(postId);
         Post post = findPostOrThrow(postId);
+        recordDailyVisitor(postId, memberId);
         boolean likedByMe = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
         return PostDetailResponse.of(post, likedByMe);
     }
@@ -107,6 +115,10 @@ public class PostService {
 
     public Post getActivePostOrThrow(Long postId) {
         return findPostOrThrow(postId);
+    }
+
+    private void recordDailyVisitor(Long postId, Long memberId) {
+        postDailyVisitorRepository.insertIgnore(postId, memberId, LocalDate.now(KST));
     }
 
     private Post findPostOrThrow(Long postId) {

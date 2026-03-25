@@ -20,6 +20,8 @@ import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
 import kr.ac.knu.comit.member.service.MemberService;
 import kr.ac.knu.comit.post.controller.PostController;
+import kr.ac.knu.comit.post.domain.BoardType;
+import kr.ac.knu.comit.post.dto.PostDetailResponse;
 import kr.ac.knu.comit.post.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @WebMvcTest({MemberController.class, PostController.class, CommentController.class})
 @Import({
@@ -102,6 +107,36 @@ class AuthenticatedApiWebTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data").value(10L));
+    }
+
+    @Test
+    void mapsPostDetailResponseIncludingViewCountUsingInterfaceAnnotationsAndAuthInjection() throws Exception {
+        given(postService.getPost(eq(101L), eq(1L))).willReturn(
+                new PostDetailResponse(
+                        101L,
+                        BoardType.QNA,
+                        "JPA fetch join 질문",
+                        "join fetch와 entity graph 차이가 궁금합니다.",
+                        "backend-dev",
+                        3,
+                        128,
+                        true,
+                        List.of("spring", "jpa"),
+                        LocalDateTime.parse("2026-03-24T10:00:00"),
+                        LocalDateTime.parse("2026-03-24T10:30:00")
+                )
+        );
+
+        mockMvc.perform(get("/posts/101")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "reader"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.id").value(101L))
+                .andExpect(jsonPath("$.data.boardType").value("QNA"))
+                .andExpect(jsonPath("$.data.viewCount").value(128))
+                .andExpect(jsonPath("$.data.likedByMe").value(true))
+                .andExpect(jsonPath("$.data.tags[0]").value("spring"));
     }
 
     @Test

@@ -56,6 +56,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void incrementLikeCount(@Param("postId") Long postId);
 
     /**
+     * 조회수를 단일 DB update로 증가시킨다.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE Post p
+            SET p.viewCount = p.viewCount + 1
+            WHERE p.id = :postId
+              AND p.deletedAt IS NULL
+            """)
+    void incrementViewCount(@Param("postId") Long postId);
+
+    /**
      * 좋아요 수를 단일 DB update로 감소시킨다.
      */
     @Modifying(clearAutomatically = true)
