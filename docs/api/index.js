@@ -26,5 +26,12 @@ window.API_DOCS = [
   href: "./post/PostControllerApi.html",
   endpointCount: 8,
   sectionPath: "post"
+},
+{
+  title: "AdminReportControllerApi",
+  summary: "관리자가 신고 상세 정보를 조회합니다.",
+  href: "./report/AdminReportControllerApi.html",
+  endpointCount: 3,
+  sectionPath: "report"
 }
 ];

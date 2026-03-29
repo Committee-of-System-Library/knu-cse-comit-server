@@ -3,6 +3,7 @@ package kr.ac.knu.comit.api;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -15,6 +16,8 @@ import kr.ac.knu.comit.comment.dto.CommentListResponse;
 import kr.ac.knu.comit.comment.dto.CommentResponse;
 import kr.ac.knu.comit.comment.dto.ReplyResponse;
 import kr.ac.knu.comit.comment.service.CommentService;
+import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.global.auth.MemberArgumentResolver;
 import kr.ac.knu.comit.global.auth.MemberAuthenticationFilter;
 import kr.ac.knu.comit.global.config.WebMvcConfig;
@@ -30,6 +33,13 @@ import kr.ac.knu.comit.post.dto.HotPostListResponse;
 import kr.ac.knu.comit.post.dto.HotPostResponse;
 import kr.ac.knu.comit.post.dto.PostDetailResponse;
 import kr.ac.knu.comit.post.service.PostService;
+import kr.ac.knu.comit.report.controller.AdminReportController;
+import kr.ac.knu.comit.report.domain.ReportStatus;
+import kr.ac.knu.comit.report.domain.ReportTargetType;
+import kr.ac.knu.comit.report.dto.AdminReportDetailResponse;
+import kr.ac.knu.comit.report.dto.AdminReportPageResponse;
+import kr.ac.knu.comit.report.dto.AdminReportSummaryResponse;
+import kr.ac.knu.comit.report.service.AdminReportService;
 import kr.ac.knu.comit.report.service.ReportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +55,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@WebMvcTest({MemberController.class, PostController.class, CommentController.class})
+@WebMvcTest({MemberController.class, PostController.class, CommentController.class, AdminReportController.class})
 @Import({
         WebMvcConfig.class,
         MemberArgumentResolver.class,
@@ -69,6 +79,9 @@ class AuthenticatedApiWebTest {
 
     @MockitoBean
     private ReportService reportService;
+
+    @MockitoBean
+    private AdminReportService adminReportService;
 
     @BeforeEach
     void setUp() {
@@ -259,6 +272,80 @@ class AuthenticatedApiWebTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.reportId").value(302L));
+    }
+
+    @Test
+    void mapsAdminReportListResponseForAdmin() throws Exception {
+        // given
+        // 관리자 신고 목록 응답을 준비한다.
+        given(adminReportService.getReports(eq(null), eq(null), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(new AdminReportPageResponse(
+                        List.of(new AdminReportSummaryResponse(
+                                1L,
+                                ReportTargetType.POST,
+                                10L,
+                                "광고성 도배입니다",
+                                "reporter-1",
+                                ReportStatus.RECEIVED,
+                                LocalDateTime.parse("2026-03-28T10:00:00")
+                        )),
+                        0,
+                        20,
+                        1,
+                        1
+                ));
+
+        // when & then
+        // 관리자 요청이면 신고 목록 응답 구조가 정상 직렬화되어야 한다.
+        mockMvc.perform(get("/admin/reports")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "admin")
+                        .header("X-Member-Role", "ADMIN")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.reports[0].id").value(1L))
+                .andExpect(jsonPath("$.data.reports[0].targetType").value("POST"))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
+    }
+
+    @Test
+    void returnsForbiddenWhenNonAdminRequestsAdminReportList() throws Exception {
+        // when & then
+        // 관리자 권한이 아니면 신고 관리자 API 접근이 거부되어야 한다.
+        mockMvc.perform(get("/admin/reports")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "student")
+                        .header("X-Member-Role", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/common/forbidden"))
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+    }
+
+    @Test
+    void returnsBadRequestWhenAdminRequestsReceivedTransitionForReportReview() throws Exception {
+        // given
+        // RECEIVED로의 자기 전이를 요청하면 INVALID_REQUEST를 반환하도록 준비한다.
+        willThrow(new BusinessException(CommonErrorCode.INVALID_REQUEST))
+                .given(adminReportService)
+                .reviewReport(1L, 1L, ReportStatus.RECEIVED);
+
+        // when & then
+        // 관리자 상태 변경 요청이 도메인 규칙 위반이면 400으로 변환되어야 한다.
+        mockMvc.perform(patch("/admin/reports/1/status")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "admin")
+                        .header("X-Member-Role", "ADMIN")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "RECEIVED"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("/problems/common/invalid-request"))
+                .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"));
     }
 
     @Test

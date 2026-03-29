@@ -26,6 +26,12 @@ public class Member {
     @Column(nullable = false)
     private boolean studentNumberVisible = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MemberStatus status = MemberStatus.ACTIVE;
+
+    private LocalDateTime suspendedUntil;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -89,6 +95,43 @@ public class Member {
 
     public boolean isStudentNumberVisible() {
         return studentNumberVisible;
+    }
+
+    public void suspend(LocalDateTime until) {
+        this.status = MemberStatus.SUSPENDED;
+        this.suspendedUntil = until;
+    }
+
+    public void ban() {
+        this.status = MemberStatus.BANNED;
+        this.suspendedUntil = null;
+    }
+
+    public void activate() {
+        this.status = MemberStatus.ACTIVE;
+        this.suspendedUntil = null;
+    }
+
+    public boolean isSuspended() {
+        if (status != MemberStatus.SUSPENDED) return false;
+        if (suspendedUntil == null) return true;
+        return LocalDateTime.now().isBefore(suspendedUntil);
+    }
+
+    public boolean isBanned() {
+        return status == MemberStatus.BANNED;
+    }
+
+    public MemberStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getSuspendedUntil() {
+        return suspendedUntil;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     private static void validateNickname(String nickname) {
