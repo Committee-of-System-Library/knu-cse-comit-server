@@ -5,16 +5,22 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import kr.ac.knu.comit.comment.controller.AdminCommentController;
 import kr.ac.knu.comit.comment.controller.CommentController;
 import kr.ac.knu.comit.comment.dto.CommentListResponse;
 import kr.ac.knu.comit.comment.dto.CommentResponse;
 import kr.ac.knu.comit.comment.dto.ReplyResponse;
+import kr.ac.knu.comit.comment.service.AdminCommentService;
 import kr.ac.knu.comit.comment.service.CommentService;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.CommonErrorCode;
@@ -22,13 +28,18 @@ import kr.ac.knu.comit.global.auth.MemberArgumentResolver;
 import kr.ac.knu.comit.global.auth.MemberAuthenticationFilter;
 import kr.ac.knu.comit.global.config.WebMvcConfig;
 import kr.ac.knu.comit.global.exception.GlobalExceptionHandler;
+import kr.ac.knu.comit.member.controller.AdminMemberController;
 import kr.ac.knu.comit.member.controller.MemberController;
 import kr.ac.knu.comit.member.domain.Member;
+import kr.ac.knu.comit.member.domain.MemberRepository;
+import kr.ac.knu.comit.member.service.AdminMemberService;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
 import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.post.controller.AdminPostController;
 import kr.ac.knu.comit.post.controller.PostController;
 import kr.ac.knu.comit.post.domain.BoardType;
 import kr.ac.knu.comit.post.domain.PostConstraints;
+import kr.ac.knu.comit.post.service.AdminPostService;
 import kr.ac.knu.comit.post.dto.HotPostListResponse;
 import kr.ac.knu.comit.post.dto.HotPostResponse;
 import kr.ac.knu.comit.post.dto.PostDetailResponse;
@@ -54,13 +65,23 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-@WebMvcTest({MemberController.class, PostController.class, CommentController.class, AdminReportController.class})
+@WebMvcTest({
+        MemberController.class,
+        PostController.class,
+        CommentController.class,
+        AdminMemberController.class,
+        AdminPostController.class,
+        AdminCommentController.class,
+        AdminReportController.class
+})
 @Import({
         WebMvcConfig.class,
         MemberArgumentResolver.class,
         MemberAuthenticationFilter.class,
-        GlobalExceptionHandler.class
+        GlobalExceptionHandler.class,
+        AdminMemberService.class
 })
 @ActiveProfiles("local")
 class AuthenticatedApiWebTest {
@@ -82,6 +103,15 @@ class AuthenticatedApiWebTest {
 
     @MockitoBean
     private AdminReportService adminReportService;
+
+    @MockitoBean
+    private AdminPostService adminPostService;
+
+    @MockitoBean
+    private AdminCommentService adminCommentService;
+
+    @MockitoBean
+    private MemberRepository memberRepository;
 
     @BeforeEach
     void setUp() {
@@ -324,6 +354,69 @@ class AuthenticatedApiWebTest {
     }
 
     @Test
+    void returnsForbiddenWhenNonAdminRequestsAdminMemberList() throws Exception {
+        // when & then
+        // 관리자 권한이 아니면 회원 관리자 API 접근이 거부되어야 한다.
+        mockMvc.perform(get("/admin/members")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "student")
+                        .header("X-Member-Role", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/common/forbidden"))
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+    }
+
+    @Test
+    void returnsForbiddenWhenNonAdminRequestsAdminPostList() throws Exception {
+        // when & then
+        // 관리자 권한이 아니면 게시글 관리자 API 접근이 거부되어야 한다.
+        mockMvc.perform(get("/admin/posts")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "student")
+                        .header("X-Member-Role", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/common/forbidden"))
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+    }
+
+    @Test
+    void returnsForbiddenWhenNonAdminRequestsAdminCommentList() throws Exception {
+        // when & then
+        // 관리자 권한이 아니면 댓글 관리자 API 접근이 거부되어야 한다.
+        mockMvc.perform(get("/admin/comments")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "student")
+                        .header("X-Member-Role", "STUDENT"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/common/forbidden"))
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+    }
+
+    @Test
+    void returnsBadRequestWhenAdminMemberStatusBodyOmitsStatus() throws Exception {
+        // given
+        // 실제 회원 조회까지 도달하도록 관리자 대상 회원을 준비한다.
+        given(memberRepository.findByIdAndDeletedAtIsNull(1L))
+                .willReturn(Optional.of(authenticatedMember()));
+
+        // when & then
+        // status가 누락되면 요청 경계에서 INVALID_REQUEST로 거부되어야 한다.
+        mockMvc.perform(patch("/admin/members/1/status")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "admin")
+                        .header("X-Member-Role", "ADMIN")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "suspendedUntil": "2026-04-28T10:00:00"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("/problems/common/invalid-request"))
+                .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"));
+    }
+
+    @Test
     void returnsBadRequestWhenAdminRequestsReceivedTransitionForReportReview() throws Exception {
         // given
         // RECEIVED로의 자기 전이를 요청하면 INVALID_REQUEST를 반환하도록 준비한다.
@@ -475,6 +568,36 @@ class AuthenticatedApiWebTest {
                 .andExpect(jsonPath("$.type").value("/problems/common/invalid-request"))
                 .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.invalidFields[0].field").value("message"));
+    }
+
+    @Test
+    void allowsConfiguredCorsOriginForFrontend() throws Exception {
+        // when & then
+        // 허용된 프론트 origin의 preflight 요청에는 CORS 헤더가 포함되어야 한다.
+        mockMvc.perform(options("/members/me")
+                        .header("Origin", "https://knu-cse-comit-client.vercel.app")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://knu-cse-comit-client.vercel.app"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"));
+    }
+
+    @Test
+    void redirectsApiDocsRootToIndexHtml() throws Exception {
+        // when & then
+        // 문서 루트 경로는 index.html로 리다이렉트되어야 한다.
+        mockMvc.perform(get("/api/docs"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(header().string("Location", "/api/docs/index.html"));
+    }
+
+    @Test
+    void servesGeneratedApiDocsIndexScript() throws Exception {
+        // when & then
+        // 생성된 API 문서 정적 산출물이 앱 경로로 서빙되어야 한다.
+        mockMvc.perform(get("/api/docs/index.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("window.API_DOCS")));
     }
 
     private Member authenticatedMember() {
