@@ -2,6 +2,7 @@ package kr.ac.knu.comit.member.domain;
 
 import jakarta.persistence.*;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.global.exception.MemberErrorCode;
 
 import java.time.LocalDateTime;
@@ -98,6 +99,7 @@ public class Member {
     }
 
     public void suspend(LocalDateTime until) {
+        validateSuspendedUntil(until);
         this.status = MemberStatus.SUSPENDED;
         this.suspendedUntil = until;
     }
@@ -146,5 +148,11 @@ public class Member {
         }
         String normalized = studentNumber.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private static void validateSuspendedUntil(LocalDateTime suspendedUntil) {
+        if (suspendedUntil != null && !suspendedUntil.isAfter(LocalDateTime.now())) {
+            throw new BusinessException(CommonErrorCode.INVALID_REQUEST);
+        }
     }
 }

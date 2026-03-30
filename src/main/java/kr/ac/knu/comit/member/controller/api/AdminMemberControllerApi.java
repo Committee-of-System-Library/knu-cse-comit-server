@@ -11,6 +11,7 @@ import kr.ac.knu.comit.global.exception.ApiResponse;
 import kr.ac.knu.comit.member.domain.MemberStatus;
 import kr.ac.knu.comit.member.dto.AdminMemberPageResponse;
 import kr.ac.knu.comit.member.dto.AdminMemberStatusRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -98,7 +99,7 @@ public interface AdminMemberControllerApi {
     @PatchMapping("/{memberId}/status")
     ResponseEntity<ApiResponse<Void>> updateMemberStatus(
             @PathVariable Long memberId,
-            @RequestBody AdminMemberStatusRequest request,
+            @RequestBody @Valid AdminMemberStatusRequest request,
             @AuthenticatedMember MemberPrincipal principal
     );
 }
