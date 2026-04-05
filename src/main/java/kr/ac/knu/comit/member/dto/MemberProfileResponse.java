@@ -6,14 +6,16 @@ public record MemberProfileResponse(
         Long id,
         String nickname,
         String studentNumber,
-        boolean studentNumberVisible
+        boolean studentNumberVisible,
+        String majorTrack
 ) {
     public static MemberProfileResponse from(Member member) {
         return new MemberProfileResponse(
                 member.getId(),
                 member.getNickname(),
                 member.getStudentNumber(),
-                member.isStudentNumberVisible()
+                member.isStudentNumberVisible(),
+                member.getMajorTrack()
         );
     }
 }

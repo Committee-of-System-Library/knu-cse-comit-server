@@ -172,6 +172,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             Pageable pageable
     );
 
+    /**
+     * 특정 회원이 작성한 활성 게시글을 cursor 기반으로 조회한다.
+     */
+    @Query("""
+            SELECT p FROM Post p
+            JOIN FETCH p.member
+            WHERE p.member.id = :memberId
+              AND p.deletedAt IS NULL
+              AND p.hiddenByAdmin = false
+              AND (:cursorId IS NULL OR p.id < :cursorId)
+            ORDER BY p.id DESC
+            """)
+    List<Post> findActiveByMemberId(@Param("memberId") Long memberId,
+                                    @Param("cursorId") Long cursorId,
+                                    Pageable pageable);
+
     interface HotPostScoreView {
         Long getPostId();
         long getScore();

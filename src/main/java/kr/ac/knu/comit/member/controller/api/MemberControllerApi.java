@@ -10,13 +10,17 @@ import kr.ac.knu.comit.global.auth.AuthenticatedMember;
 import kr.ac.knu.comit.global.auth.MemberPrincipal;
 import kr.ac.knu.comit.global.exception.ApiResponse;
 import kr.ac.knu.comit.member.dto.MemberProfileResponse;
+import kr.ac.knu.comit.member.dto.MyCommentResponse;
+import kr.ac.knu.comit.member.dto.MyCursorPageResponse;
 import kr.ac.knu.comit.member.dto.UpdateNicknameRequest;
 import kr.ac.knu.comit.member.dto.UpdateStudentNumberVisibilityRequest;
+import kr.ac.knu.comit.post.dto.PostSummaryResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @ApiContract
 @RequestMapping("/members/me")
@@ -107,6 +111,93 @@ public interface MemberControllerApi {
     @PatchMapping("/student-number-visibility")
     ResponseEntity<ApiResponse<Void>> updateStudentNumberVisibility(
             @RequestBody @Valid UpdateStudentNumberVisibilityRequest request,
+            @AuthenticatedMember MemberPrincipal principal
+    );
+
+    @ApiDoc(
+            summary = "내가 쓴 글 목록 조회",
+            description = "현재 로그인한 회원이 작성한 게시글 목록을 cursor 기반으로 조회합니다.",
+            descriptions = {
+                    @FieldDesc(name = "items", value = "게시글 목록"),
+                    @FieldDesc(name = "nextCursorId", value = "다음 페이지 커서 ID, null이면 마지막 페이지"),
+                    @FieldDesc(name = "hasNext", value = "다음 페이지 존재 여부")
+            },
+            errors = {
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
+            },
+            example = @Example(response = """
+                    {
+                      "result": "SUCCESS",
+                      "data": {
+                        "items": [],
+                        "nextCursorId": null,
+                        "hasNext": false
+                      }
+                    }
+                    """)
+    )
+    @GetMapping("/posts")
+    ResponseEntity<ApiResponse<MyCursorPageResponse<PostSummaryResponse>>> getMyPosts(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticatedMember MemberPrincipal principal
+    );
+
+    @ApiDoc(
+            summary = "내가 쓴 댓글 목록 조회",
+            description = "현재 로그인한 회원이 작성한 댓글 목록을 cursor 기반으로 조회합니다.",
+            descriptions = {
+                    @FieldDesc(name = "items", value = "댓글 목록"),
+                    @FieldDesc(name = "nextCursorId", value = "다음 페이지 커서 ID, null이면 마지막 페이지"),
+                    @FieldDesc(name = "hasNext", value = "다음 페이지 존재 여부")
+            },
+            errors = {
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
+            },
+            example = @Example(response = """
+                    {
+                      "result": "SUCCESS",
+                      "data": {
+                        "items": [],
+                        "nextCursorId": null,
+                        "hasNext": false
+                      }
+                    }
+                    """)
+    )
+    @GetMapping("/comments")
+    ResponseEntity<ApiResponse<MyCursorPageResponse<MyCommentResponse>>> getMyComments(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticatedMember MemberPrincipal principal
+    );
+
+    @ApiDoc(
+            summary = "내가 좋아요한 글 목록 조회",
+            description = "현재 로그인한 회원이 좋아요한 게시글 목록을 cursor 기반으로 조회합니다.",
+            descriptions = {
+                    @FieldDesc(name = "items", value = "게시글 목록"),
+                    @FieldDesc(name = "nextCursorId", value = "다음 페이지 커서 ID, null이면 마지막 페이지"),
+                    @FieldDesc(name = "hasNext", value = "다음 페이지 존재 여부")
+            },
+            errors = {
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "인증된 사용자의 로컬 회원 정보가 존재하지 않을 때")
+            },
+            example = @Example(response = """
+                    {
+                      "result": "SUCCESS",
+                      "data": {
+                        "items": [],
+                        "nextCursorId": null,
+                        "hasNext": false
+                      }
+                    }
+                    """)
+    )
+    @GetMapping("/likes")
+    ResponseEntity<ApiResponse<MyCursorPageResponse<PostSummaryResponse>>> getMyLikes(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int size,
             @AuthenticatedMember MemberPrincipal principal
     );
 }

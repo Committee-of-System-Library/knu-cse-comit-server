@@ -79,6 +79,22 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             """)
     Optional<Comment> findActiveByIdForAdmin(@Param("commentId") Long commentId);
 
+    /**
+     * 특정 회원이 작성한 활성 댓글을 cursor 기반으로 조회한다. post는 JOIN FETCH한다.
+     */
+    @Query("""
+            SELECT c FROM Comment c
+            JOIN FETCH c.post
+            WHERE c.member.id = :memberId
+              AND c.deletedAt IS NULL
+              AND c.hiddenByAdmin = false
+              AND (:cursorId IS NULL OR c.id < :cursorId)
+            ORDER BY c.id DESC
+            """)
+    List<Comment> findActiveByMemberId(@Param("memberId") Long memberId,
+                                       @Param("cursorId") Long cursorId,
+                                       Pageable pageable);
+
     @Query("""
             SELECT c.post.id AS postId, COUNT(c) AS commentCount
             FROM Comment c

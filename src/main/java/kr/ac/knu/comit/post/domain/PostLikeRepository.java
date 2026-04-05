@@ -1,9 +1,12 @@
 package kr.ac.knu.comit.post.domain;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
@@ -26,4 +29,12 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     void deleteByPostIdAndMemberId(@Param("postId") Long postId, @Param("memberId") Long memberId);
 
     boolean existsByPostIdAndMemberId(Long postId, Long memberId);
+
+    /**
+     * 특정 회원이 좋아요한 게시글 목록을 cursor 기반으로 조회한다.
+     */
+    @Query("SELECT pl FROM PostLike pl WHERE pl.memberId = :memberId AND (:cursorId IS NULL OR pl.id < :cursorId) ORDER BY pl.id DESC")
+    List<PostLike> findByMemberId(@Param("memberId") Long memberId,
+                                  @Param("cursorId") Long cursorId,
+                                  Pageable pageable);
 }
