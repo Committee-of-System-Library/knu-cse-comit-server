@@ -1,14 +1,18 @@
 package kr.ac.knu.comit.global.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,6 +34,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(problemDetail.getStatus())
                 .body(problemDetail);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException e,
+            HttpServletRequest request
+    ) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.METHOD_NOT_ALLOWED);
+        pd.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(pd);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ProblemDetail> handleNoResourceFound(NoResourceFoundException e, HttpServletRequest request) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(pd);
     }
 
     @ExceptionHandler(Exception.class)
