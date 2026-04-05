@@ -111,7 +111,7 @@ public class PostService {
     public void updatePost(Long memberId, Long postId, UpdatePostRequest request) {
         Post post = findPostOrThrow(postId);
         checkOwnership(post, memberId);
-        post.update(request.title(), request.content(), request.tags());
+        post.update(request.title(), request.content(), request.tags(), request.imageUrls());
     }
 
     @Transactional

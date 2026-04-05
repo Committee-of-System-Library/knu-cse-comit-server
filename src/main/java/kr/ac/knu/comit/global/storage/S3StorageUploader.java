@@ -50,13 +50,15 @@ public class S3StorageUploader implements StorageUploader {
     public PresignedUploadUrls generatePresignedUploadUrl(String folder, String fileName, String contentType) {
         String key = folder + "/" + UUID.randomUUID() + extractExtension(fileName);
 
+        // contentType을 PutObjectRequest에 포함하면 AWS가 signed header로 등록하여
+        // 프론트 PUT 요청의 Content-Type이 정확히 일치해야만 서명 검증이 통과된다.
+        // contentType 유효성 검사는 ImageService에서 이미 수행하므로 여기서는 포함하지 않는다.
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(
                 PutObjectPresignRequest.builder()
                         .signatureDuration(PRESIGNED_URL_EXPIRY)
                         .putObjectRequest(PutObjectRequest.builder()
                                 .bucket(s3Properties.bucketName())
                                 .key(key)
-                                .contentType(contentType)
                                 .build())
                         .build()
         );
