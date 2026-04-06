@@ -27,6 +27,11 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private static final int DEFAULT_PAGE_SIZE = 20;
+    /**
+     * JPA는 빈 컬렉션을 IN 절 파라미터로 허용하지 않으므로,
+     * excludedBoardTypes가 비어 있을 때 사용하는 더미 값이다.
+     * SQL 조건에서 excludedBoardTypesEmpty=true 이면 IN 절 자체를 건너뛴다.
+     */
     private static final String DUMMY_EXCLUDED_BOARD_TYPE = "__NO_EXCLUDED_BOARD_TYPE__";
     private static final int SEARCH_RESULT_LIMIT = 5;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
@@ -120,6 +125,7 @@ public class PostService {
 
     @Transactional
     public PostDetailResponse getPost(Long postId, Long memberId) {
+        // 존재 여부를 먼저 확인하고 조회수를 증가시킨 후, 갱신된 viewCount가 반영된 상태로 재조회한다.
         findPostOrThrow(postId);
         postRepository.incrementViewCount(postId);
         Post post = findPostOrThrow(postId);
@@ -149,7 +155,7 @@ public class PostService {
     public void deletePost(Long memberId, Long postId) {
         Post post = findPostOrThrow(postId);
         checkOwnership(post, memberId);
-        deletePost(post);
+        post.delete();
     }
 
     @Transactional
@@ -158,7 +164,7 @@ public class PostService {
         if (!admin) {
             checkOwnership(post, memberId);
         }
-        deletePost(post);
+        post.delete();
     }
 
     /**
@@ -190,9 +196,9 @@ public class PostService {
     private Map<Long, List<String>> imageUrlsByPostId(List<Long> postIds) {
         return postImageRepository.findByPost_IdInOrderBySortOrderAsc(postIds)
                 .stream()
-                .collect(java.util.stream.Collectors.groupingBy(
+                .collect(Collectors.groupingBy(
                         PostImage::getPostId,
-                        java.util.stream.Collectors.mapping(PostImage::getImageUrl, java.util.stream.Collectors.toList())
+                        Collectors.mapping(PostImage::getImageUrl, Collectors.toList())
                 ));
     }
 
@@ -209,9 +215,5 @@ public class PostService {
         if (!post.isWrittenBy(memberId)) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
-    }
-
-    private void deletePost(Post post) {
-        post.delete();
     }
 }

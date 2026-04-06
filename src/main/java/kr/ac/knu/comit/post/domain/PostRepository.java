@@ -84,42 +84,50 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.id = :id AND p.deletedAt IS NULL")
     Optional<Post> findActiveByIdForAdmin(@Param("id") Long id);
 
+    /**
+     * 최근 N일 가중치 점수 기준 인기글 상위 K개를 조회한다.
+     *
+     * @implNote CTE(scored)로 점수를 한 번만 계산하고 외부 쿼리에서 필터·정렬한다.
+     * JPA는 빈 컬렉션을 IN 파라미터로 허용하지 않으므로, excludedBoardTypes가 비어 있을 때는
+     * excludedBoardTypesEmpty=true 로 IN 조건 자체를 건너뛴다.
+     */
     @Query(
             value = """
-                    SELECT p.id AS postId,
-                           (
-                               COALESCE(pl.recent_like_count, 0) * :likeWeight
-                               + COALESCE(c.recent_comment_count, 0) * :commentWeight
-                               + COALESCE(pdv.recent_unique_visitor_count, 0) * :visitorWeight
-                           ) AS score
-                    FROM post p
-                    LEFT JOIN (
-                        SELECT post_id, COUNT(*) AS recent_like_count
-                        FROM post_like
-                        WHERE created_at >= :startDateTime
-                        GROUP BY post_id
-                    ) pl ON pl.post_id = p.id
-                    LEFT JOIN (
-                        SELECT post_id, COUNT(*) AS recent_comment_count
-                        FROM `comment`
-                        WHERE deleted_at IS NULL
-                          AND created_at >= :startDateTime
-                        GROUP BY post_id
-                    ) c ON c.post_id = p.id
-                    LEFT JOIN (
-                        SELECT post_id, COUNT(DISTINCT member_id) AS recent_unique_visitor_count
-                        FROM post_daily_visitor
-                        WHERE viewed_on >= :startDate
-                        GROUP BY post_id
-                    ) pdv ON pdv.post_id = p.id
-                    WHERE p.deleted_at IS NULL
-                      AND (:excludedBoardTypesEmpty = true OR p.board_type NOT IN (:excludedBoardTypes))
-                      AND (
-                          COALESCE(pl.recent_like_count, 0) * :likeWeight
-                          + COALESCE(c.recent_comment_count, 0) * :commentWeight
-                          + COALESCE(pdv.recent_unique_visitor_count, 0) * :visitorWeight
-                      ) > 0
-                    ORDER BY score DESC, p.created_at DESC, p.id DESC
+                    WITH scored AS (
+                        SELECT p.id         AS postId,
+                               p.created_at AS createdAt,
+                               (
+                                   COALESCE(pl.recent_like_count, 0) * :likeWeight
+                                   + COALESCE(c.recent_comment_count, 0) * :commentWeight
+                                   + COALESCE(pdv.recent_unique_visitor_count, 0) * :visitorWeight
+                               )            AS score
+                        FROM post p
+                        LEFT JOIN (
+                            SELECT post_id, COUNT(*) AS recent_like_count
+                            FROM post_like
+                            WHERE created_at >= :startDateTime
+                            GROUP BY post_id
+                        ) pl ON pl.post_id = p.id
+                        LEFT JOIN (
+                            SELECT post_id, COUNT(*) AS recent_comment_count
+                            FROM `comment`
+                            WHERE deleted_at IS NULL
+                              AND created_at >= :startDateTime
+                            GROUP BY post_id
+                        ) c ON c.post_id = p.id
+                        LEFT JOIN (
+                            SELECT post_id, COUNT(DISTINCT member_id) AS recent_unique_visitor_count
+                            FROM post_daily_visitor
+                            WHERE viewed_on >= :startDate
+                            GROUP BY post_id
+                        ) pdv ON pdv.post_id = p.id
+                        WHERE p.deleted_at IS NULL
+                          AND (:excludedBoardTypesEmpty = true OR p.board_type NOT IN (:excludedBoardTypes))
+                    )
+                    SELECT postId, score
+                    FROM scored
+                    WHERE score > 0
+                    ORDER BY score DESC, createdAt DESC, postId DESC
                     LIMIT :limit
                     """,
             nativeQuery = true
