@@ -44,6 +44,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PostRepositoryIntegrationTest {
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private static final int LIKE_WEIGHT = 5;
+    private static final int COMMENT_WEIGHT = 3;
+    private static final int VISITOR_WEIGHT = 2;
+    private static final int HOT_LIMIT = 5;
+    private static final List<String> EXCLUDED_BOARD_TYPES = List.of(BoardType.NOTICE.name(), BoardType.EVENT.name());
 
     @Container
     static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0.36")
@@ -99,6 +104,8 @@ class PostRepositoryIntegrationTest {
         Post higherIdFourPost = savePost(author, "higher-id-four-post", BoardType.QNA, commonTieTime);
         Post oldSignalOnlyPost = savePost(author, "old-signal-only-post", BoardType.QNA, startDateTime.plusDays(1));
         Post deletedPost = saveDeletedPost(author, "deleted-post", startDateTime.plusDays(4));
+        Post excludedNoticePost = savePost(author, "excluded-notice-post", BoardType.NOTICE, startDateTime.plusDays(6));
+        Post excludedEventPost = savePost(author, "excluded-event-post", BoardType.EVENT, startDateTime.plusDays(6));
 
         saveLike(topPost, member1, startDateTime.plusHours(1));
         saveLike(topPost, member2, startDateTime.plusHours(2));
@@ -128,12 +135,30 @@ class PostRepositoryIntegrationTest {
         saveComment(deletedPost, member2, startDateTime.plusHours(10), false);
         saveVisitor(deletedPost, member3, today.minusDays(3));
 
+        // 제외 대상 게시판은 점수가 높아도 결과에 포함되면 안 된다.
+        saveLike(excludedNoticePost, member1, startDateTime.plusHours(11));
+        saveLike(excludedNoticePost, member2, startDateTime.plusHours(12));
+        saveComment(excludedNoticePost, member3, startDateTime.plusHours(13), false);
+
+        saveLike(excludedEventPost, member1, startDateTime.plusHours(14));
+        saveComment(excludedEventPost, member2, startDateTime.plusHours(15), false);
+        saveVisitor(excludedEventPost, member3, today.minusDays(1));
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         // 최근 7일 인기글 집계 쿼리를 실행한다.
-        List<PostRepository.HotPostScoreView> results = postRepository.findHotPostScores(startDateTime, startDate);
+        List<PostRepository.HotPostScoreView> results = postRepository.findHotPostScores(
+                startDateTime,
+                startDate,
+                LIKE_WEIGHT,
+                COMMENT_WEIGHT,
+                VISITOR_WEIGHT,
+                false,
+                EXCLUDED_BOARD_TYPES,
+                HOT_LIMIT
+        );
 
         // then
         // 가중치, 동점 정렬, 제외 규칙, 상위 5개 제한이 모두 반영되어야 한다.
@@ -172,7 +197,16 @@ class PostRepositoryIntegrationTest {
 
         // when
         // 최근 7일 인기글 집계 쿼리를 실행한다.
-        List<PostRepository.HotPostScoreView> results = postRepository.findHotPostScores(startDateTime, startDate);
+        List<PostRepository.HotPostScoreView> results = postRepository.findHotPostScores(
+                startDateTime,
+                startDate,
+                LIKE_WEIGHT,
+                COMMENT_WEIGHT,
+                VISITOR_WEIGHT,
+                false,
+                EXCLUDED_BOARD_TYPES,
+                HOT_LIMIT
+        );
 
         // then
         // 동일 회원의 여러 날짜 조회는 1명의 unique 방문자로 계산되어야 한다.

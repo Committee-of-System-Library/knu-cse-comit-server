@@ -3,6 +3,9 @@ package kr.ac.knu.comit.post.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -17,6 +20,7 @@ import kr.ac.knu.comit.fixture.PostFixture;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.post.config.HotPostPolicyProperties;
 import kr.ac.knu.comit.post.domain.Post;
 import kr.ac.knu.comit.post.domain.PostDailyVisitorRepository;
 import kr.ac.knu.comit.post.domain.PostImageRepository;
@@ -45,8 +49,6 @@ import kr.ac.knu.comit.post.dto.LikeToggleResponse;
 import kr.ac.knu.comit.post.dto.PostCursorPageResponse;
 import kr.ac.knu.comit.post.dto.UpdatePostRequest;
 
-import static org.mockito.ArgumentMatchers.anyList;
-
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PostService")
@@ -72,6 +74,9 @@ class PostServiceTest {
 
     @Mock
     private ContentPreviewGenerator contentPreviewGenerator;
+
+    @Mock
+    private HotPostPolicyProperties hotPostPolicyProperties;
 
     @InjectMocks
     private PostService postService;
@@ -138,7 +143,14 @@ class PostServiceTest {
         Post olderPost = PostFixture.post(10L, 7);
         Post newerPost = PostFixture.post(20L, 3);
 
-        given(postRepository.findHotPostScores(any(), any()))
+        given(hotPostPolicyProperties.getWindowDays()).willReturn(7);
+        given(hotPostPolicyProperties.getLikeWeight()).willReturn(5);
+        given(hotPostPolicyProperties.getCommentWeight()).willReturn(3);
+        given(hotPostPolicyProperties.getVisitorWeight()).willReturn(2);
+        given(hotPostPolicyProperties.getExcludedBoardTypes()).willReturn(List.of(BoardType.NOTICE, BoardType.EVENT));
+        given(hotPostPolicyProperties.getLimit()).willReturn(5);
+
+        given(postRepository.findHotPostScores(any(), any(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyList(), anyInt()))
                 .willReturn(List.of(
                         hotPostScore(20L, 15),
                         hotPostScore(10L, 9)
@@ -168,7 +180,14 @@ class PostServiceTest {
     void returnsEmptyHotPostsWhenNoCandidateExists() {
         // given
         // 인기글 후보가 하나도 없는 집계 결과를 준비한다.
-        given(postRepository.findHotPostScores(any(), any())).willReturn(List.of());
+        given(hotPostPolicyProperties.getWindowDays()).willReturn(7);
+        given(hotPostPolicyProperties.getLikeWeight()).willReturn(5);
+        given(hotPostPolicyProperties.getCommentWeight()).willReturn(3);
+        given(hotPostPolicyProperties.getVisitorWeight()).willReturn(2);
+        given(hotPostPolicyProperties.getExcludedBoardTypes()).willReturn(List.of(BoardType.NOTICE, BoardType.EVENT));
+        given(hotPostPolicyProperties.getLimit()).willReturn(5);
+        given(postRepository.findHotPostScores(any(), any(), anyInt(), anyInt(), anyInt(), anyBoolean(), anyList(), anyInt()))
+                .willReturn(List.of());
 
         // when
         // 인기글 목록 조회를 실행한다.

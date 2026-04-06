@@ -6,6 +6,7 @@ import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.comment.service.CommentQueryService;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.post.config.HotPostPolicyProperties;
 import kr.ac.knu.comit.post.domain.*;
 import kr.ac.knu.comit.post.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private static final int DEFAULT_PAGE_SIZE = 20;
-    private static final int HOT_POST_WINDOW_DAYS = 7;
+    private static final String DUMMY_EXCLUDED_BOARD_TYPE = "__NO_EXCLUDED_BOARD_TYPE__";
     private static final int SEARCH_RESULT_LIMIT = 5;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
@@ -37,6 +38,7 @@ public class PostService {
     private final MemberService memberService;
     private final CommentQueryService commentQueryService;
     private final ContentPreviewGenerator contentPreviewGenerator;
+    private final HotPostPolicyProperties hotPostPolicyProperties;
 
     /**
      * cursor 기반으로 게시글 목록을 조회한다.
@@ -68,10 +70,28 @@ public class PostService {
     }
 
     public HotPostListResponse getHotPosts() {
-        LocalDate startDate = LocalDate.now(KST).minusDays(HOT_POST_WINDOW_DAYS - 1L);
+        int windowDays = Math.max(1, hotPostPolicyProperties.getWindowDays());
+        int limit = Math.max(1, hotPostPolicyProperties.getLimit());
+        LocalDate startDate = LocalDate.now(KST).minusDays(windowDays - 1L);
         LocalDateTime startDateTime = startDate.atStartOfDay();
+        List<String> excludedBoardTypes = hotPostPolicyProperties.getExcludedBoardTypes().stream()
+                .map(Enum::name)
+                .toList();
+        boolean excludedBoardTypesEmpty = excludedBoardTypes.isEmpty();
+        List<String> excludedBoardTypesParam = excludedBoardTypesEmpty
+                ? List.of(DUMMY_EXCLUDED_BOARD_TYPE)
+                : excludedBoardTypes;
 
-        List<Long> orderedPostIds = postRepository.findHotPostScores(startDateTime, startDate).stream()
+        List<Long> orderedPostIds = postRepository.findHotPostScores(
+                        startDateTime,
+                        startDate,
+                        hotPostPolicyProperties.getLikeWeight(),
+                        hotPostPolicyProperties.getCommentWeight(),
+                        hotPostPolicyProperties.getVisitorWeight(),
+                        excludedBoardTypesEmpty,
+                        excludedBoardTypesParam,
+                        limit
+                ).stream()
                 .map(PostRepository.HotPostScoreView::getPostId)
                 .toList();
 
