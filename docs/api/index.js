@@ -36,9 +36,9 @@ window.API_DOCS = [
 },
 {
   title: "AdminMemberControllerApi",
-  summary: "관리자가 회원 목록을 조회합니다. status로 필터링할 수 있습니다.",
+  summary: "관리자가 회원을 소프트 삭제합니다.",
   href: "./member/AdminMemberControllerApi.html",
-  endpointCount: 2,
+  endpointCount: 3,
   sectionPath: "member"
 },
 {

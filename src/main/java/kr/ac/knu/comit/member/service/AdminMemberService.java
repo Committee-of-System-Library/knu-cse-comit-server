@@ -27,12 +27,22 @@ public class AdminMemberService {
 
     @Transactional
     public void updateMemberStatus(Long memberId, AdminMemberStatusRequest request) {
-        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+        Member member = findMemberOrThrow(memberId);
         switch (request.status()) {
             case ACTIVE -> member.activate();
             case SUSPENDED -> member.suspend(request.suspendedUntil());
             case BANNED -> member.ban();
         }
+    }
+
+    @Transactional
+    public void deleteMember(Long memberId) {
+        Member member = findMemberOrThrow(memberId);
+        member.delete();
+    }
+
+    private Member findMemberOrThrow(Long memberId) {
+        return memberRepository.findByIdAndDeletedAtIsNull(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }

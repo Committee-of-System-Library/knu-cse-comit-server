@@ -14,6 +14,7 @@ import kr.ac.knu.comit.member.dto.AdminMemberStatusRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,6 +101,30 @@ public interface AdminMemberControllerApi {
     ResponseEntity<ApiResponse<Void>> updateMemberStatus(
             @PathVariable Long memberId,
             @RequestBody @Valid AdminMemberStatusRequest request,
+            @AuthenticatedMember MemberPrincipal principal
+    );
+
+    @ApiDoc(
+            summary = "회원 삭제 (관리자)",
+            description = "관리자가 회원을 소프트 삭제합니다.",
+            descriptions = {
+                    @FieldDesc(name = "memberId", value = "삭제할 회원 ID입니다.")
+            },
+            errors = {
+                    @ApiError(code = "FORBIDDEN", when = "관리자 권한이 없는 사용자가 요청할 때"),
+                    @ApiError(code = "MEMBER_NOT_FOUND", when = "존재하지 않거나 이미 삭제된 회원 ID로 요청할 때")
+            },
+            example = @Example(
+                    response = """
+                            {
+                              "result": "SUCCESS"
+                            }
+                            """
+            )
+    )
+    @DeleteMapping("/{memberId}")
+    ResponseEntity<ApiResponse<Void>> deleteMember(
+            @PathVariable Long memberId,
             @AuthenticatedMember MemberPrincipal principal
     );
 }
