@@ -4,21 +4,22 @@
 
 ### 1.1 Goal
 - 비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 서비스 핵심 콘텐츠를 한눈에 볼 수 있어야 한다.
-- 단일 API 호출로 QNA·INFO·FREE·NOTICE·EVENT 각 5개 + 인기글 5개를 반환해 FE 다중 호출을 제거한다.
+- 단일 API 호출로 QNA·INFO·FREE 각 5개, NOTICE·EVENT 각 3개, 인기글 5개를 반환해 FE 다중 호출을 제거한다.
 
 ### 1.2 In Scope
 - `GET /main` 퍼블릭 엔드포인트 (인증 불필요)
-- 각 BoardType 최신 5개 게시글 요약
+- QNA·INFO·FREE 최신 5개 게시글 요약
+- NOTICE·EVENT 최신 3개 게시글 요약
 - Hot Post 상위 5개 (기존 집계 로직 재사용)
 
 ### 1.3 Out of Scope
 - 비로그인 상태의 좋아요 여부 표시
 - 실시간 갱신 / 캐시 전략 (후속 작업)
-- 게시판별 5개 초과 조회
+- 섹션별 정책 개수 초과 조회
 
 ### 1.4 Success Signal
 - 비로그인 상태에서 `GET /main` 호출 시 200 응답과 모든 섹션 데이터가 반환된다.
-- 각 섹션은 최대 5개이며, 데이터가 없으면 빈 배열을 반환한다.
+- QNA·INFO·FREE는 최대 5개, NOTICE·EVENT는 최대 3개이며, 데이터가 없으면 빈 배열을 반환한다.
 - 기존 인증 필요 API의 동작에 영향이 없다.
 
 ---
@@ -52,7 +53,7 @@ When:
 
 Then:
 - 200 OK
-- qna, info, free, notice, event 각 최대 5개, hotPosts 최대 5개 반환
+- qna, info, free는 각 최대 5개, notice, event는 각 최대 3개, hotPosts는 최대 5개 반환
 
 ### Scenario B. 특정 게시판에 게시글이 없다
 Given:
@@ -78,7 +79,7 @@ Then:
 
 ## 4. Functional Requirements
 - FR-1: `GET /main`은 인증 없이 호출 가능해야 한다.
-- FR-2: QNA·INFO·FREE·NOTICE·EVENT 각 게시판 최신 5개를 반환한다.
+- FR-2: QNA·INFO·FREE는 각 게시판 최신 5개를 반환하고, NOTICE·EVENT는 각 게시판 최신 3개를 반환한다.
 - FR-3: Hot Post 상위 5개를 함께 반환한다.
 - FR-4: 각 섹션이 비어 있으면 빈 배열을 반환한다 (null 금지).
 - FR-5: soft delete 또는 관리자 숨김 처리된 게시글은 제외한다.
@@ -117,8 +118,8 @@ Then:
     "qna":     [/* PostSummaryResponse 최대 5개 */],
     "info":    [/* PostSummaryResponse 최대 5개 */],
     "free":    [/* PostSummaryResponse 최대 5개 */],
-    "notice":  [/* PostSummaryResponse 최대 5개 */],
-    "event":   [/* PostSummaryResponse 최대 5개 */],
+    "notice":  [/* PostSummaryResponse 최대 3개 */],
+    "event":   [/* PostSummaryResponse 최대 3개 */],
     "hotPosts":[/* HotPostResponse 최대 5개 */]
   }
 }
@@ -152,7 +153,7 @@ Then:
 ## 9. Test Criteria
 
 ### 9.1 Happy Path
-- 모든 게시판에 데이터가 있을 때 각 섹션 5개 이하로 반환
+- 모든 게시판에 데이터가 있을 때 qna/info/free는 5개 이하, notice/event는 3개 이하로 반환
 - 인증 토큰 없이 200 응답
 
 ### 9.2 Failure Cases
@@ -161,7 +162,7 @@ Then:
 ### 9.3 Edge Cases
 - 특정 게시판 게시글 0개 → 해당 섹션 빈 배열
 - 인기글 점수 0 → hotPosts 빈 배열
-- 게시글이 5개 미만인 게시판 → 있는 만큼만 반환
+- 게시글이 섹션 최대 개수보다 적은 게시판 → 있는 만큼만 반환
 
 ### 9.4 Regression Risks
 - 기존 `GET /posts?boardType=QNA` 등 인증 필요 API 동작 변경 없어야 함
@@ -192,7 +193,7 @@ Then:
 - API surface는 `GET /main` 하나로 고정하고, 응답은 `ApiResponse<MainPageResponse>` 형태로 반환한다.
 - `MainController`는 인증 컨텍스트를 받지 않고 `MainService`를 한 번만 호출하는 thin controller로 구현한다.
 - `MainService`는 read-only 유스케이스 오케스트레이터로 두고, 게시판별 최신 목록은 `MainPageQueryService`를 통해 조회한다.
-- `MainPageQueryService`는 메인 페이지 전용 읽기 모델을 책임지고, 게시판별 최신 5개 조회에 필요한 정렬/가시성/응답 조립 세부사항을 캡슐화한다.
+- `MainPageQueryService`는 메인 페이지 전용 읽기 모델을 책임지고, 게시판별 최신 목록 조회에 필요한 정렬/가시성/응답 조립 세부사항을 캡슐화한다.
 - Hot Post는 우선 기존 `PostService.getHotPosts()`를 재사용한다.
 - 메인 페이지 섹션 DTO는 새로 만들지 않고 기존 `PostSummaryResponse`, `HotPostResponse`를 재사용한다.
 
@@ -214,7 +215,7 @@ Then:
 
 ### 12.4 서비스 흐름
 1. `MainService.getMainPage()`를 공개 메서드로 둔다.
-2. 내부에서 `mainPageQueryService.getSections(5)`를 호출해 `qna`, `info`, `free`, `notice`, `event` 섹션 데이터를 한 번에 받는다.
+2. 내부에서 `mainPageQueryService.getSections(5)`를 호출해 `qna`, `info`, `free`, `notice`, `event` 섹션 데이터를 한 번에 받는다. 이때 `notice`, `event`는 내부 정책으로 3개까지만 조회한다.
 3. `postService.getHotPosts().posts()`로 `hotPosts`를 채운다.
 4. 위 결과를 `MainPageResponse`에 모아 반환한다.
 
@@ -250,13 +251,13 @@ public MainPageSections getSections(int size) {
 
 #### 서비스 테스트
 - `MainServiceTest`
-  - `mainPageQueryService.getSections(5)`와 `postService.getHotPosts()` 결과를 조합해 반환한다.
+- `mainPageQueryService.getSections(5)`와 `postService.getHotPosts()` 결과를 조합해 반환한다.
   - 특정 게시판 결과가 비어 있어도 빈 리스트를 유지한다.
   - `hotPosts`가 비어 있으면 빈 리스트를 유지한다.
 
 #### 조회 계층 테스트
 - `MainPageQueryServiceTest` 또는 리포지토리/통합 테스트
-  - 각 게시판이 최신순(id DESC)으로 최대 5개만 반환되는지 검증한다.
+- QNA·INFO·FREE는 최대 5개, NOTICE·EVENT는 최대 3개만 조회되는지 검증한다.
   - 삭제/숨김 게시글이 제외되는지 검증한다.
   - 데이터가 없는 게시판은 빈 리스트가 되는지 검증한다.
   - `PostSummaryResponse` 조립 시 본문 전체가 아닌 preview만 포함되는지 검증한다.

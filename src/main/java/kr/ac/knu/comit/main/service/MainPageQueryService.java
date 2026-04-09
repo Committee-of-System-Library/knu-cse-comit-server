@@ -26,13 +26,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MainPageQueryService {
 
-    private static final int SECTION_LIMIT = 5;
+    private static final int DEFAULT_SECTION_LIMIT = 5;
+    private static final int COMPACT_SECTION_LIMIT = 3;
     private static final List<BoardType> SECTION_ORDER = List.of(
             BoardType.QNA,
             BoardType.INFO,
             BoardType.FREE,
             BoardType.NOTICE,
             BoardType.EVENT
+    );
+    private static final Map<BoardType, Integer> SECTION_LIMITS = Map.of(
+            BoardType.QNA, DEFAULT_SECTION_LIMIT,
+            BoardType.INFO, DEFAULT_SECTION_LIMIT,
+            BoardType.FREE, DEFAULT_SECTION_LIMIT,
+            BoardType.NOTICE, COMPACT_SECTION_LIMIT,
+            BoardType.EVENT, COMPACT_SECTION_LIMIT
     );
 
     private final PostRepository postRepository;
@@ -45,9 +53,8 @@ public class MainPageQueryService {
      */
     public MainPageSections getSections(int size) {
         validateSize(size);
-        int pageSize = Math.min(size, SECTION_LIMIT);
 
-        Map<BoardType, List<Post>> sectionPosts = loadSectionPosts(pageSize);
+        Map<BoardType, List<Post>> sectionPosts = loadSectionPosts(size);
         List<Long> sectionPostIds = sectionPosts.values().stream()
                 .flatMap(List::stream)
                 .map(Post::getId)
@@ -66,10 +73,11 @@ public class MainPageQueryService {
         );
     }
 
-    private Map<BoardType, List<Post>> loadSectionPosts(int size) {
+    private Map<BoardType, List<Post>> loadSectionPosts(int requestedSize) {
         Map<BoardType, List<Post>> postsByBoard = new EnumMap<>(BoardType.class);
         for (BoardType boardType : SECTION_ORDER) {
-            postsByBoard.put(boardType, postRepository.findFirstPage(boardType, PageRequest.of(0, size)));
+            int pageSize = Math.min(requestedSize, sectionLimit(boardType));
+            postsByBoard.put(boardType, postRepository.findFirstPage(boardType, PageRequest.of(0, pageSize)));
         }
         return postsByBoard;
     }
@@ -119,5 +127,9 @@ public class MainPageQueryService {
         if (size <= 0) {
             throw new BusinessException(CommonErrorCode.INVALID_REQUEST);
         }
+    }
+
+    private int sectionLimit(BoardType boardType) {
+        return SECTION_LIMITS.getOrDefault(boardType, DEFAULT_SECTION_LIMIT);
     }
 }

@@ -16,13 +16,13 @@ public interface MainControllerApi {
 
     @ApiDoc(
             summary = "메인 페이지 조회",
-            description = "비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 QNA, INFO, FREE, NOTICE, EVENT 최신 게시글과 인기글을 한 번에 조회합니다.",
+            description = "비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 QNA, INFO, FREE 최신 게시글 5개와 NOTICE, EVENT 최신 게시글 3개, 인기글을 한 번에 조회합니다.",
             descriptions = {
                     @FieldDesc(name = "qna", value = "QNA 게시판의 최신 5개 게시글 요약 목록입니다."),
                     @FieldDesc(name = "info", value = "INFO 게시판의 최신 5개 게시글 요약 목록입니다."),
                     @FieldDesc(name = "free", value = "FREE 게시판의 최신 5개 게시글 요약 목록입니다."),
-                    @FieldDesc(name = "notice", value = "NOTICE 게시판의 최신 5개 게시글 요약 목록입니다."),
-                    @FieldDesc(name = "event", value = "EVENT 게시판의 최신 5개 게시글 요약 목록입니다."),
+                    @FieldDesc(name = "notice", value = "NOTICE 게시판의 최신 3개 게시글 요약 목록입니다."),
+                    @FieldDesc(name = "event", value = "EVENT 게시판의 최신 3개 게시글 요약 목록입니다."),
                     @FieldDesc(name = "hotPosts", value = "최근 7일 기준 반응 점수가 높은 인기글 5개 목록입니다.")
             },
             example = @Example(

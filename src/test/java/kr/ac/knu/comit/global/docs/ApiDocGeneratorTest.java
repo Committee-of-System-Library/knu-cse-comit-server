@@ -64,5 +64,7 @@ class ApiDocGeneratorTest {
         assertThat(mainHtml).contains("/main");
         assertThat(mainHtml).contains("qna");
         assertThat(mainHtml).contains("hotPosts");
+        assertThat(mainHtml).contains("NOTICE 게시판의 최신 3개 게시글 요약 목록입니다.");
+        assertThat(mainHtml).contains("EVENT 게시판의 최신 3개 게시글 요약 목록입니다.");
     }
 }

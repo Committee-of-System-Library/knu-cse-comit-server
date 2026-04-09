@@ -24,7 +24,7 @@
 - [feature-spec-template.md](./feature-spec-template.md)
   새 기능 설계를 시작할 때 복사해서 사용하는 기능 명세 템플릿
 - [main-page.md](./main-page.md)
-  비로그인 포함 메인 페이지 단일 API — 게시판별 최신 5개 + 인기글 5개 반환
+  비로그인 포함 메인 페이지 단일 API — QNA/INFO/FREE 5개, NOTICE/EVENT 3개, 인기글 5개 반환
 - [post-comment-report.md](./post-comment-report.md)
   게시글·댓글 신고 접수, 자유 입력 사유, 중복 신고 방지, v1 범위 정의
 - [sso-registration-flow.md](./sso-registration-flow.md)

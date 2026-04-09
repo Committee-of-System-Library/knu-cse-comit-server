@@ -261,7 +261,7 @@
         <section class="content"><article class="endpoint" id="getMainPage">
     <div class="eyebrow">GET</div>
     <h2>메인 페이지 조회</h2>
-    <p>비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 QNA, INFO, FREE, NOTICE, EVENT 최신 게시글과 인기글을 한 번에 조회합니다.</p>
+    <p>비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 QNA, INFO, FREE 최신 게시글 5개와 NOTICE, EVENT 최신 게시글 3개, 인기글을 한 번에 조회합니다.</p>
     <div class="path-box"><span class="method">GET</span>/main</div>
     <div class="section-grid"><section class="card">
     <h3>응답 바디 필드</h3>
@@ -278,7 +278,7 @@
     <td><code>event</code></td>
     <td><span class="type-chip type-collection">List&lt;PostSummaryResponse&gt;</span></td>
     <td><span class="badge-optional">optional</span></td>
-    <td>EVENT 게시판의 최신 5개 게시글 요약 목록입니다.</td>
+    <td>EVENT 게시판의 최신 3개 게시글 요약 목록입니다.</td>
 </tr>
 <tr>
     <td><code>free</code></td>
@@ -302,7 +302,7 @@
     <td><code>notice</code></td>
     <td><span class="type-chip type-collection">List&lt;PostSummaryResponse&gt;</span></td>
     <td><span class="badge-optional">optional</span></td>
-    <td>NOTICE 게시판의 최신 5개 게시글 요약 목록입니다.</td>
+    <td>NOTICE 게시판의 최신 3개 게시글 요약 목록입니다.</td>
 </tr>
 <tr>
     <td><code>qna</code></td>
