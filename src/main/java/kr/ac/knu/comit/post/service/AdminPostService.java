@@ -1,5 +1,6 @@
 package kr.ac.knu.comit.post.service;
 
+import java.util.Set;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
@@ -16,10 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AdminPostService {
 
@@ -30,7 +28,6 @@ public class AdminPostService {
     private final PostRepository postRepository;
     private final MemberService memberService;
 
-    @Transactional
     public AdminCreatePostResponse createPost(Long adminMemberId, AdminCreatePostRequest request) {
         if (!ADMIN_ONLY_BOARD_TYPES.contains(request.boardType())) {
             throw new BusinessException(PostErrorCode.FORBIDDEN_BOARD_TYPE);

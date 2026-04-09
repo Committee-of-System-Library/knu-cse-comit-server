@@ -6,7 +6,7 @@ import kr.ac.knu.comit.image.controller.api.ImageControllerApi;
 import kr.ac.knu.comit.image.dto.PresignedUploadRequest;
 import kr.ac.knu.comit.image.dto.PresignedUploadResponse;
 import kr.ac.knu.comit.image.dto.UploadImageResponse;
-import kr.ac.knu.comit.image.service.ImageService;
+import kr.ac.knu.comit.image.infra.ImageUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageController implements ImageControllerApi {
 
-    private final ImageService imageService;
+    private final ImageUploader imageUploader;
 
     @Override
     public ResponseEntity<ApiResponse<UploadImageResponse>> uploadImage(
@@ -24,7 +24,7 @@ public class ImageController implements ImageControllerApi {
             String folder,
             MemberPrincipal principal
     ) {
-        return ResponseEntity.ok(ApiResponse.success(imageService.upload(file, folder)));
+        return ResponseEntity.ok(ApiResponse.success(imageUploader.upload(file, folder)));
     }
 
     @Override
@@ -32,6 +32,6 @@ public class ImageController implements ImageControllerApi {
             PresignedUploadRequest request,
             MemberPrincipal principal
     ) {
-        return ResponseEntity.ok(ApiResponse.success(imageService.generatePresignedUrl(request)));
+        return ResponseEntity.ok(ApiResponse.success(imageUploader.generatePresignedUrl(request)));
     }
 }

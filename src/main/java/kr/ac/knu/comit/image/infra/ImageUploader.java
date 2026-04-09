@@ -1,5 +1,6 @@
-package kr.ac.knu.comit.image.service;
+package kr.ac.knu.comit.image.infra;
 
+import java.util.Set;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.StorageErrorCode;
 import kr.ac.knu.comit.global.storage.S3StorageUploader;
@@ -8,14 +9,12 @@ import kr.ac.knu.comit.image.dto.PresignedUploadRequest;
 import kr.ac.knu.comit.image.dto.PresignedUploadResponse;
 import kr.ac.knu.comit.image.dto.UploadImageResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Set;
-
-@Service
+@Component
 @RequiredArgsConstructor
-public class ImageService {
+public class ImageUploader {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
