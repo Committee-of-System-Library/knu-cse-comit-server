@@ -21,26 +21,28 @@ import kr.ac.knu.comit.comment.dto.UpdateCommentRequest;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.CommentErrorCode;
 import kr.ac.knu.comit.global.exception.CommonErrorCode;
+import kr.ac.knu.comit.global.exception.MemberErrorCode;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
-import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.member.domain.MemberRepository;
 import kr.ac.knu.comit.post.domain.Post;
-import kr.ac.knu.comit.post.service.PostService;
+import kr.ac.knu.comit.post.domain.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
-    private final MemberService memberService;
-    private final PostService postService;
+    private final PostRepository postRepository;
+    private final MemberRepository memberRepository;
 
     public CommentListResponse getComments(Long postId, Long memberId) {
-        postService.getActivePostOrThrow(postId);
+        findActivePostOrThrow(postId);
+
         List<Comment> topLevelComments = commentRepository.findActiveTopLevelByPostId(postId);
         List<Comment> replies = commentRepository.findActiveRepliesByPostId(postId);
         if (topLevelComments.isEmpty() && replies.isEmpty()) {
@@ -65,13 +67,14 @@ public class CommentService {
         );
     }
 
-    @Transactional
     public Long createComment(Long postId, Long memberId, CreateCommentRequest request) {
-        Post post = postService.getActivePostOrThrow(postId);
-        Member author = memberService.findMemberOrThrow(memberId);
+        Post post = findActivePostOrThrow(postId);
+        Member author = findMemberOrThrow(memberId);
+
         Comment comment = request.parentCommentId() == null
                 ? Comment.create(post, author, request.content())
                 : Comment.reply(post, findCommentOrThrow(request.parentCommentId()), author, request.content());
+
         return commentRepository.save(comment).getId();
     }
 
@@ -79,6 +82,7 @@ public class CommentService {
     public void updateComment(Long commentId, Long memberId, UpdateCommentRequest request) {
         Comment comment = findCommentOrThrow(commentId);
         checkOwnership(comment, memberId);
+
         comment.update(request.content());
     }
 
@@ -86,9 +90,11 @@ public class CommentService {
     public void deleteComment(Long commentId, Long memberId) {
         Comment comment = findCommentOrThrow(commentId);
         checkOwnership(comment, memberId);
+
         if (!comment.isReply()) {
             commentRepository.softDeleteRepliesByParentCommentId(commentId, LocalDateTime.now());
         }
+
         comment.delete();
     }
 
@@ -99,6 +105,7 @@ public class CommentService {
         int inserted = commentLikeRepository.insertIgnore(commentId, memberId);
         if (inserted == 1) {
             commentRepository.incrementLikeCount(commentId);
+
             return LikeToggleResponse.likedState();
         }
 
@@ -118,7 +125,8 @@ public class CommentService {
                 .toList();
     }
 
-    private Map<Long, List<ReplyResponse>> groupRepliesByParentId(List<Comment> replies, Set<Long> likedIds, Long memberId) {
+    private Map<Long, List<ReplyResponse>> groupRepliesByParentId(List<Comment> replies, Set<Long> likedIds,
+                                                                  Long memberId) {
         return replies.stream()
                 .collect(groupingBy(
                         Comment::getParentCommentId,
@@ -137,5 +145,16 @@ public class CommentService {
         if (!comment.isWrittenBy(memberId)) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
+    }
+
+    private Post findActivePostOrThrow(Long postId) {
+        return postRepository.findActiveById(postId)
+                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
+    }
+
+    private Member findMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .filter(m -> !m.isDeleted())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
