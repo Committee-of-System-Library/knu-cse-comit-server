@@ -3,10 +3,12 @@ package kr.ac.knu.comit.member.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import kr.ac.knu.comit.fixture.MemberFixture;
+import kr.ac.knu.comit.comment.service.CommentService;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.global.exception.MemberErrorCode;
@@ -14,6 +16,7 @@ import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.domain.MemberRepository;
 import kr.ac.knu.comit.member.domain.MemberStatus;
 import kr.ac.knu.comit.member.dto.AdminMemberStatusRequest;
+import kr.ac.knu.comit.post.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,12 @@ class AdminMemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private PostService postService;
+
+    @Mock
+    private CommentService commentService;
 
     @InjectMocks
     private AdminMemberService adminMemberService;
@@ -84,8 +93,15 @@ class AdminMemberServiceTest {
         adminMemberService.deleteMember(1L);
 
         // then
-        // 회원은 소프트 삭제 상태가 되어야 한다.
+        // 회원은 소프트 삭제되고 개인정보는 비식별화되어야 한다.
         assertThat(member.isDeleted()).isTrue();
+        assertThat(member.getDisplayNickname()).isEqualTo("탈퇴한 사용자");
+        assertThat(member.getNickname()).startsWith("deleted-member-");
+        assertThat(member.getStudentNumber()).isNull();
+        assertThat(member.getProfileImageUrl()).isNull();
+        assertThat(member.isStudentNumberVisible()).isFalse();
+        then(postService).should().removeMemberInteractions(1L);
+        then(commentService).should().removeMemberLikes(1L);
     }
 
     @Test
