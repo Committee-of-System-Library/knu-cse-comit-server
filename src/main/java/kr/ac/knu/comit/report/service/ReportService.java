@@ -2,10 +2,12 @@ package kr.ac.knu.comit.report.service;
 
 import kr.ac.knu.comit.comment.service.CommentQueryService;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.global.exception.ReportErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
-import kr.ac.knu.comit.post.service.PostService;
+import kr.ac.knu.comit.post.domain.Post;
+import kr.ac.knu.comit.post.domain.PostRepository;
 import kr.ac.knu.comit.report.domain.Report;
 import kr.ac.knu.comit.report.domain.ReportRepository;
 import kr.ac.knu.comit.report.domain.ReportTargetType;
@@ -16,24 +18,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ReportService {
 
     private final ReportRepository reportRepository;
     private final MemberService memberService;
-    private final PostService postService;
+    private final PostRepository postRepository;
     private final CommentQueryService commentQueryService;
 
     @Transactional
     public Long reportPost(Long postId, Long memberId, String message) {
-        postService.getActivePostOrThrow(postId);
+        findPostOrThrow(postId);
+
         return createReport(memberId, ReportTargetType.POST, postId, message);
     }
 
-    @Transactional
     public Long reportComment(Long commentId, Long memberId, String message) {
         commentQueryService.getActiveCommentOrThrow(commentId);
+
         return createReport(memberId, ReportTargetType.COMMENT, commentId, message);
     }
 
@@ -53,6 +55,11 @@ public class ReportService {
             }
             throw exception;
         }
+    }
+
+    private Post findPostOrThrow(Long postId) {
+        return postRepository.findActiveById(postId)
+                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
     }
 
     private boolean isDuplicateKeyViolation(Throwable throwable) {

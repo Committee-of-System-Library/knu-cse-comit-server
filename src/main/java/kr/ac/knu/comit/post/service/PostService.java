@@ -1,27 +1,38 @@
 package kr.ac.knu.comit.post.service;
 
-import kr.ac.knu.comit.global.exception.BusinessException;
-import kr.ac.knu.comit.global.exception.CommonErrorCode;
-import kr.ac.knu.comit.global.exception.PostErrorCode;
-import kr.ac.knu.comit.comment.service.CommentQueryService;
-import kr.ac.knu.comit.member.domain.Member;
-import kr.ac.knu.comit.member.service.MemberService;
-import kr.ac.knu.comit.post.domain.*;
-import kr.ac.knu.comit.post.dto.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.ac.knu.comit.comment.service.CommentQueryService;
+import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
+import kr.ac.knu.comit.global.exception.MemberErrorCode;
+import kr.ac.knu.comit.global.exception.PostErrorCode;
+import kr.ac.knu.comit.member.domain.Member;
+import kr.ac.knu.comit.member.domain.MemberRepository;
+import kr.ac.knu.comit.post.domain.BoardType;
+import kr.ac.knu.comit.post.domain.Post;
+import kr.ac.knu.comit.post.domain.PostDailyVisitorRepository;
+import kr.ac.knu.comit.post.domain.PostImage;
+import kr.ac.knu.comit.post.domain.PostImageRepository;
+import kr.ac.knu.comit.post.domain.PostLikeRepository;
+import kr.ac.knu.comit.post.domain.PostRepository;
+import kr.ac.knu.comit.post.dto.CreatePostRequest;
+import kr.ac.knu.comit.post.dto.HotPostListResponse;
+import kr.ac.knu.comit.post.dto.LikeToggleResponse;
+import kr.ac.knu.comit.post.dto.PostCursorPageResponse;
+import kr.ac.knu.comit.post.dto.PostDetailResponse;
+import kr.ac.knu.comit.post.dto.PostSearchResult;
+import kr.ac.knu.comit.post.dto.UpdatePostRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
 
@@ -34,7 +45,7 @@ public class PostService {
     private final PostImageRepository postImageRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostDailyVisitorRepository postDailyVisitorRepository;
-    private final MemberService memberService;
+    private final MemberRepository memberRepository;
     private final CommentQueryService commentQueryService;
     private final ContentPreviewGenerator contentPreviewGenerator;
 
@@ -42,8 +53,7 @@ public class PostService {
      * cursor 기반으로 게시글 목록을 조회한다.
      *
      * @apiNote {@code cursor}가 {@code null}이면 첫 페이지를 조회한다.
-     * @implNote 리포지토리는 작성자 정보를 함께 가져오고, 댓글 수는 별도로 채워
-     * 서비스 메서드가 위에서 아래로 읽히는 흐름을 유지한다.
+     * @implNote 리포지토리는 작성자 정보를 함께 가져오고, 댓글 수는 별도로 채워 서비스 메서드가 위에서 아래로 읽히는 흐름을 유지한다.
      */
     public PostCursorPageResponse getPosts(BoardType boardType, Long cursorId, int size) {
         if (size <= 0) {
@@ -102,19 +112,25 @@ public class PostService {
     public PostDetailResponse getPost(Long postId, Long memberId) {
         findPostOrThrow(postId);
         postRepository.incrementViewCount(postId);
+
         Post post = findPostOrThrow(postId);
         recordDailyVisitor(postId, memberId);
+
         boolean likedByMe = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
+
         List<String> imageUrls = postImageRepository.findByPost_IdOrderBySortOrderAsc(postId)
                 .stream().map(PostImage::getImageUrl).toList();
+
         return PostDetailResponse.of(post, likedByMe, imageUrls);
     }
 
     @Transactional
     public Long createPost(Long memberId, CreatePostRequest request) {
-        Member author = memberService.findMemberOrThrow(memberId);
+        Member author = findActiveMemberOrThrow(memberId);
+
         Post post = Post.create(author, request.boardType(), request.title(),
                 request.content(), request.tags(), request.imageUrls());
+
         return postRepository.save(post).getId();
     }
 
@@ -144,8 +160,7 @@ public class PostService {
     /**
      * 요청한 사용자의 게시글 좋아요 상태를 토글한다.
      *
-     * @implNote 현재 구현은 DB 유니크 키 {@code (post_id, member_id)}와
-     * 원자적 카운터 업데이트에 기대어 메모리 기반 동기화를 피한다.
+     * @implNote 현재 구현은 DB 유니크 키 {@code (post_id, member_id)}와 원자적 카운터 업데이트에 기대어 메모리 기반 동기화를 피한다.
      */
     @Transactional
     public LikeToggleResponse toggleLike(Long memberId, Long postId) {
@@ -156,11 +171,11 @@ public class PostService {
         if (inserted == 1) {
             postRepository.incrementLikeCount(postId);
             return LikeToggleResponse.likedState();
-        } else {
-            postLikeRepository.deleteByPostIdAndMemberId(postId, memberId);
-            postRepository.decrementLikeCount(postId);
-            return LikeToggleResponse.unlikedState();
         }
+
+        postLikeRepository.deleteByPostIdAndMemberId(postId, memberId);
+        postRepository.decrementLikeCount(postId);
+        return LikeToggleResponse.unlikedState();
     }
 
     public Post getActivePostOrThrow(Long postId) {
@@ -172,7 +187,8 @@ public class PostService {
                 .stream()
                 .collect(java.util.stream.Collectors.groupingBy(
                         PostImage::getPostId,
-                        java.util.stream.Collectors.mapping(PostImage::getImageUrl, java.util.stream.Collectors.toList())
+                        java.util.stream.Collectors.mapping(PostImage::getImageUrl,
+                                java.util.stream.Collectors.toList())
                 ));
     }
 
@@ -193,5 +209,11 @@ public class PostService {
 
     private void deletePost(Post post) {
         post.delete();
+    }
+
+    private Member findActiveMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .filter(m -> !m.isDeleted())
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
