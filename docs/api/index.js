@@ -35,6 +35,13 @@ window.API_DOCS = [
   sectionPath: "image"
 },
 {
+  title: "MainControllerApi",
+  summary: "비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 QNA, INFO, FREE, NOTICE, EVENT 최신 게시글과 인기글을 한 번에 조회합니다.",
+  href: "./main/MainControllerApi.html",
+  endpointCount: 1,
+  sectionPath: "main"
+},
+{
   title: "AdminMemberControllerApi",
   summary: "관리자가 회원 목록을 조회합니다. status로 필터링할 수 있습니다.",
   href: "./member/AdminMemberControllerApi.html",

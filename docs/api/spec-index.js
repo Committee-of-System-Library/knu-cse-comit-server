@@ -10,6 +10,11 @@ window.SPEC_DOCS = [
   href: "./spec/comment-reply.html"
 },
 {
+  title: "메인 페이지 (Main Page)",
+  summary: "- 비로그인 사용자를 포함한 모든 방문자가 메인 페이지에서 서비스 핵심 콘텐츠를 한눈에 볼 수 있어야 한다.",
+  href: "./spec/main-page.html"
+},
+{
   title: "마이페이지 (My Page)",
   summary: "- 로그인한 사용자가 자신의 프로필을 조회·편집하고, 활동 내역을 한눈에 볼 수 있어야 한다.",
   href: "./spec/mypage.html"

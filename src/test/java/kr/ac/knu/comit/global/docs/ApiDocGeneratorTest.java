@@ -27,6 +27,7 @@ class ApiDocGeneratorTest {
         assertThat(Files.exists(tempDir.resolve("comment/AdminCommentControllerApi.html"))).isTrue();
         assertThat(Files.exists(tempDir.resolve("comment/CommentControllerApi.html"))).isTrue();
         assertThat(Files.exists(tempDir.resolve("member/AdminMemberControllerApi.html"))).isTrue();
+        assertThat(Files.exists(tempDir.resolve("main/MainControllerApi.html"))).isTrue();
         assertThat(Files.exists(tempDir.resolve("post/PostControllerApi.html"))).isTrue();
         assertThat(Files.exists(tempDir.resolve("post/AdminPostControllerApi.html"))).isTrue();
         assertThat(Files.exists(tempDir.resolve("report/AdminReportControllerApi.html"))).isTrue();
@@ -58,5 +59,10 @@ class ApiDocGeneratorTest {
         assertThat(authHtml).contains("SSO 로그인 시작");
         assertThat(authHtml).contains("/auth/sso/login");
         assertThat(authHtml).contains("/auth/sso/callback");
+
+        String mainHtml = Files.readString(tempDir.resolve("main/MainControllerApi.html"));
+        assertThat(mainHtml).contains("/main");
+        assertThat(mainHtml).contains("qna");
+        assertThat(mainHtml).contains("hotPosts");
     }
 }
