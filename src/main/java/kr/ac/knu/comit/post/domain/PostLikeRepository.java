@@ -1,11 +1,12 @@
 package kr.ac.knu.comit.post.domain;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
+public interface PostLikeRepository extends JpaRepository<PostLike, Long>, PostLikeRepositoryCustom {
 
     /**
      * 중복 예외를 던지지 않고 좋아요 레코드 생성을 시도한다.
@@ -24,6 +25,20 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM PostLike pl WHERE pl.postId = :postId AND pl.memberId = :memberId")
     void deleteByPostIdAndMemberId(@Param("postId") Long postId, @Param("memberId") Long memberId);
+
+    @Query("""
+            SELECT pl.postId
+            FROM PostLike pl
+            WHERE pl.memberId = :memberId
+            """)
+    List<Long> findPostIdsByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            DELETE FROM PostLike pl
+            WHERE pl.memberId = :memberId
+            """)
+    void deleteAllByMemberId(@Param("memberId") Long memberId);
 
     boolean existsByPostIdAndMemberId(Long postId, Long memberId);
 }
