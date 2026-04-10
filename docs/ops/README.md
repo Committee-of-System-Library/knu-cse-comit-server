@@ -27,6 +27,7 @@ incident-{내용}.md ← 장애 대응 기록
 | `comit-prod-like-backend-rollout.md` | SSO 미연동 상태에서 `prod-like` 백엔드를 먼저 띄우기 위한 staging 프로필, 임시 인증 브리지, `sidowi` 배포, 검증 순서 계획 |
 | `comit-sso-integration-rollout.md` | auth-server custom JWT를 `Comit` backend callback, cookie 인증, `@AuthenticatedMember` 주입, 2단계 회원가입 경계와 동적 redirectUri 연동까지 포함한 운영 계획 |
 | `comit-staging-verification.md` | `comit-staging` live에서 API docs, CORS, 첫 SSO 로그인 기반 회원 생성까지 실제 검증한 운영 기록과 수동 배포 메모 |
-| `sidowi-pinpoint-rollout.md` | `sidowi`에 Pinpoint를 도입하기 위한 버전 매트릭스, 배치 구조, agent 주입 지점, smoke test, rollback 계획 |
-| `pinpoint/` | `sidowi` Pinpoint 도입 시 바로 참고할 수 있는 compose/env/JAVA_OPTS 초안 모음 |
+| `sidowi-pinpoint-rollout.md` | `sidowi`에 Pinpoint를 도입하기 위한 버전 매트릭스, 배치 구조, backend·SSO agent 주입 지점, smoke test, rollback 계획 |
+| `sidowi-pinpoint-implementation-log.md` | `sidowi`에 Pinpoint를 실제로 적용하면서 거친 UI white screen, Inspector 404/500, Kafka·Pinot 추가, 1차 메모리 튜닝, SSO agent 연결, TLS 인증서 만료 확인까지의 실행 기록 |
+| `pinpoint/` | `sidowi` Pinpoint 도입 시 바로 참고할 수 있는 compose/env/JAVA_OPTS 초안 모음. 실제 적용값과 차이는 implementation log를 함께 본다 |
 | `backend-self-hosted-runner-flow.html` | backend `main` push 이후 GitHub Actions, GHCR, self-hosted runner, `sidowi` compose 재기동이 어떤 순서로 이어지는지 보여주는 미니맵 중심 문서형 HTML |

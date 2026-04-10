@@ -18,6 +18,7 @@
 - [Comit SSO 연동 롤아웃 계획](./ops/comit-sso-integration-rollout.md)
 - [Comit staging 검증 기록](./ops/comit-staging-verification.md)
 - [Sidowi Pinpoint 롤아웃 계획](./ops/sidowi-pinpoint-rollout.md)
+- [Sidowi Pinpoint 적용 기록](./ops/sidowi-pinpoint-implementation-log.md) - UI white screen, Inspector 404/500, Kafka·Pinot 추가, 1차 메모리 튜닝, SSO agent 연결, TLS 인증서 만료 확인까지 포함
 - [Backend self-hosted runner 배포 흐름 HTML](./ops/backend-self-hosted-runner-flow.html) - 상단 Mermaid 미니맵과 카드형 상세 설명으로 push -> runner -> server 흐름을 설명
 - [ADR-002 ProblemDetail 기반 에러 응답 표준 채택](./adr/002-problem-detail-error-response.md)
 
