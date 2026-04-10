@@ -162,6 +162,23 @@ Comit은 별도 signup form이 아니라,
 
 ## 남은 운영 이슈
 
+### healthcheck 미설정
+
+`docker-compose.services.yml`에 `healthcheck`가 없어서 앱이 완전히 뜨기 전에 트래픽을 받을 수 있다.
+
+- `build.gradle`에 `spring-boot-starter-actuator` 추가
+- `application.yml`에 `management.endpoints.web.exposure.include: health` 추가
+- compose에 아래 추가 후 `docker compose up -d knu-cse-comit-server` 재기동 필요
+
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+```
+
 ### self-hosted runner 부재
 
 현재 `knu-cse-comit-server`는:
