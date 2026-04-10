@@ -6,7 +6,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import kr.ac.knu.comit.comment.service.CommentQueryService;
+import kr.ac.knu.comit.comment.domain.CommentRepository;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.global.exception.MemberErrorCode;
@@ -46,7 +46,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final PostDailyVisitorRepository postDailyVisitorRepository;
     private final MemberRepository memberRepository;
-    private final CommentQueryService commentQueryService;
+    private final CommentRepository commentRepository;
     private final ContentPreviewGenerator contentPreviewGenerator;
 
     /**
@@ -71,7 +71,7 @@ public class PostService {
         return PostCursorPageResponse.of(
                 posts,
                 pageSize,
-                commentQueryService.countActiveCommentsByPostIds(postIds),
+                countActiveCommentsByPostIds(postIds),
                 imageUrlsByPostId(postIds),
                 contentPreviewGenerator::generate
         );
@@ -95,7 +95,7 @@ public class PostService {
         return HotPostListResponse.of(
                 posts,
                 orderedPostIds,
-                commentQueryService.countActiveCommentsByPostIds(visiblePostIds)
+                countActiveCommentsByPostIds(visiblePostIds)
         );
     }
 
@@ -215,5 +215,17 @@ public class PostService {
         return memberRepository.findById(memberId)
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private Map<Long, Integer> countActiveCommentsByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return commentRepository.countActiveByPostIds(postIds).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        CommentRepository.CommentCountView::getPostId,
+                        row -> Math.toIntExact(row.getCommentCount())
+                ));
     }
 }

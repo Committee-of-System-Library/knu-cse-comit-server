@@ -1,7 +1,9 @@
 package kr.ac.knu.comit.report.service;
 
-import kr.ac.knu.comit.comment.service.CommentQueryService;
+import kr.ac.knu.comit.comment.domain.Comment;
+import kr.ac.knu.comit.comment.domain.CommentRepository;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommentErrorCode;
 import kr.ac.knu.comit.global.exception.PostErrorCode;
 import kr.ac.knu.comit.global.exception.ReportErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
@@ -24,7 +26,7 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberService memberService;
     private final PostRepository postRepository;
-    private final CommentQueryService commentQueryService;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public Long reportPost(Long postId, Long memberId, String message) {
@@ -35,7 +37,7 @@ public class ReportService {
 
     @Transactional
     public Long reportComment(Long commentId, Long memberId, String message) {
-        commentQueryService.getActiveCommentOrThrow(commentId);
+        getActiveCommentOrThrow(commentId);
 
         return createReport(memberId, ReportTargetType.COMMENT, commentId, message);
     }
@@ -98,5 +100,10 @@ public class ReportService {
         return message != null
                 && (message.contains("uk_report_reporter_target")
                 || message.contains("Duplicate entry"));
+    }
+
+    private Comment getActiveCommentOrThrow(Long commentId) {
+        return commentRepository.findActiveById(commentId)
+                .orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 }
