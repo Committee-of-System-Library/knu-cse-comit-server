@@ -179,23 +179,10 @@ healthcheck:
   start_period: 30s
 ```
 
-### self-hosted runner 부재
+### ~~self-hosted runner 부재~~ (해결됨)
 
-현재 `knu-cse-comit-server`는:
-- PR merge
-- CI test
-- GHCR build/push
-까지는 자동화돼 있다.
-
-하지만:
-- `deploy`는 self-hosted runner가 없어서 자동 반영되지 않는다.
-
-즉 현재 상태는:
-- 코드/CI는 자동
-- 서버 반영은 수동
-
-다음 단계:
-- `knu-cse-comit-server`용 self-hosted runner를 붙여서 `deploy` job이 실제로 `sidowi`까지 반영되게 해야 한다.
+`Comit_BE` runner가 `/home/yujihun20251/actions-runner/comit-backend/`에 등록되어 online 상태.
+`deploy` job이 `sidowi`까지 자동 반영되는 구조 완성.
 
 ## 재검증 체크리스트
 
