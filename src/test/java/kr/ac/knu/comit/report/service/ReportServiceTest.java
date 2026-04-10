@@ -7,7 +7,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
-import kr.ac.knu.comit.comment.service.CommentQueryService;
+import java.sql.SQLException;
+import java.util.Optional;
+import kr.ac.knu.comit.comment.domain.CommentRepository;
 import kr.ac.knu.comit.fixture.CommentFixture;
 import kr.ac.knu.comit.fixture.MemberFixture;
 import kr.ac.knu.comit.fixture.PostFixture;
@@ -17,11 +19,12 @@ import kr.ac.knu.comit.global.exception.ReportErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
 import kr.ac.knu.comit.post.domain.Post;
-import kr.ac.knu.comit.post.service.PostService;
+import kr.ac.knu.comit.post.domain.PostRepository;
 import kr.ac.knu.comit.report.domain.Report;
 import kr.ac.knu.comit.report.domain.ReportRepository;
 import kr.ac.knu.comit.report.domain.ReportStatus;
 import kr.ac.knu.comit.report.domain.ReportTargetType;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,11 +32,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.sql.SQLException;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ReportService")
@@ -46,10 +46,10 @@ class ReportServiceTest {
     private MemberService memberService;
 
     @Mock
-    private PostService postService;
+    private PostRepository postRepository;
 
     @Mock
-    private CommentQueryService commentQueryService;
+    private CommentRepository commentRepository;
 
     @InjectMocks
     private ReportService reportService;
@@ -61,7 +61,7 @@ class ReportServiceTest {
         // 활성 게시글과 신고자, 저장 결과를 준비한다.
         Post post = PostFixture.post(10L);
         Member reporter = MemberFixture.member(1L, "reporter");
-        given(postService.getActivePostOrThrow(10L)).willReturn(post);
+        given(postRepository.findActiveById(10L)).willReturn(Optional.of(post));
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.POST, 10L))
                 .willReturn(false);
         given(memberService.findMemberOrThrow(1L)).willReturn(reporter);
@@ -96,8 +96,10 @@ class ReportServiceTest {
         // 활성 댓글과 신고자를 준비한다.
         Post post = PostFixture.post(10L);
         Member reporter = MemberFixture.member(1L, "reporter");
-        given(commentQueryService.getActiveCommentOrThrow(20L))
-                .willReturn(CommentFixture.topLevelComment(20L, post, MemberFixture.member(2L, "writer"), "욕설 댓글", 0));
+        given(commentRepository.findActiveById(20L))
+                .willReturn(Optional.of(
+                        CommentFixture.topLevelComment(20L, post, MemberFixture.member(2L, "writer"), "욕설 댓글", 0)));
+
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.COMMENT, 20L))
                 .willReturn(false);
         given(memberService.findMemberOrThrow(1L)).willReturn(reporter);
@@ -117,7 +119,8 @@ class ReportServiceTest {
 
         ArgumentCaptor<Report> reportCaptor = ArgumentCaptor.forClass(Report.class);
         then(reportRepository).should().save(reportCaptor.capture());
-        assertThat(ReflectionTestUtils.getField(reportCaptor.getValue(), "targetType")).isEqualTo(ReportTargetType.COMMENT);
+        assertThat(ReflectionTestUtils.getField(reportCaptor.getValue(), "targetType")).isEqualTo(
+                ReportTargetType.COMMENT);
         assertThat(ReflectionTestUtils.getField(reportCaptor.getValue(), "targetId")).isEqualTo(20L);
     }
 
@@ -126,7 +129,7 @@ class ReportServiceTest {
     void throwsWhenDuplicateReportExists() {
         // given
         // 동일 대상에 대한 기존 신고가 이미 있는 상황을 준비한다.
-        given(postService.getActivePostOrThrow(10L)).willReturn(PostFixture.post(10L));
+        given(postRepository.findActiveById(10L)).willReturn(Optional.of(PostFixture.post(10L)));
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.POST, 10L))
                 .willReturn(true);
 
@@ -148,7 +151,7 @@ class ReportServiceTest {
     void throwsWhenMessageIsBlankAfterTrim() {
         // given
         // 활성 게시글과 신고자를 준비한다.
-        given(postService.getActivePostOrThrow(10L)).willReturn(PostFixture.post(10L));
+        given(postRepository.findActiveById(10L)).willReturn(Optional.of(PostFixture.post(10L)));
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.POST, 10L))
                 .willReturn(false);
         given(memberService.findMemberOrThrow(1L)).willReturn(MemberFixture.member(1L, "reporter"));
@@ -170,7 +173,7 @@ class ReportServiceTest {
     void convertsDataIntegrityViolationToDuplicateReportError() {
         // given
         // 선행 중복 검사 통과 후 저장 단계에서 유니크 충돌이 나는 상황을 준비한다.
-        given(postService.getActivePostOrThrow(10L)).willReturn(PostFixture.post(10L));
+        given(postRepository.findActiveById(10L)).willReturn(Optional.of(PostFixture.post(10L)));
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.POST, 10L))
                 .willReturn(false);
         given(memberService.findMemberOrThrow(1L)).willReturn(MemberFixture.member(1L, "reporter"));
@@ -189,7 +192,7 @@ class ReportServiceTest {
     void propagatesNonDuplicateIntegrityViolations() {
         // given
         // 중복 신고가 아닌 다른 DB 무결성 오류 상황을 준비한다.
-        given(postService.getActivePostOrThrow(10L)).willReturn(PostFixture.post(10L));
+        given(postRepository.findActiveById(10L)).willReturn(Optional.of(PostFixture.post(10L)));
         given(reportRepository.existsByReporterIdAndTargetTypeAndTargetId(1L, ReportTargetType.POST, 10L))
                 .willReturn(false);
         given(memberService.findMemberOrThrow(1L)).willReturn(MemberFixture.member(1L, "reporter"));

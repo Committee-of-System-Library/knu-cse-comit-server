@@ -15,15 +15,17 @@ import kr.ac.knu.comit.comment.domain.CommentRepository;
 import kr.ac.knu.comit.comment.dto.CommentListResponse;
 import kr.ac.knu.comit.comment.dto.CreateCommentRequest;
 import kr.ac.knu.comit.comment.dto.LikeToggleResponse;
+import kr.ac.knu.comit.comment.dto.UpdateCommentRequest;
 import kr.ac.knu.comit.fixture.CommentFixture;
 import kr.ac.knu.comit.fixture.MemberFixture;
 import kr.ac.knu.comit.fixture.PostFixture;
 import kr.ac.knu.comit.global.exception.BusinessException;
 import kr.ac.knu.comit.global.exception.CommentErrorCode;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
-import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.member.domain.MemberRepository;
 import kr.ac.knu.comit.post.domain.Post;
-import kr.ac.knu.comit.post.service.PostService;
+import kr.ac.knu.comit.post.domain.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,8 +34,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import kr.ac.knu.comit.comment.dto.UpdateCommentRequest;
-import kr.ac.knu.comit.global.exception.CommonErrorCode;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -47,10 +47,10 @@ class CommentServiceTest {
     private CommentLikeRepository commentLikeRepository;
 
     @Mock
-    private MemberService memberService;
+    private MemberRepository memberRepository;
 
     @Mock
-    private PostService postService;
+    private PostRepository postRepository;
 
     @InjectMocks
     private CommentService commentService;
@@ -68,7 +68,7 @@ class CommentServiceTest {
             Comment parent = CommentFixture.topLevelComment(201L, post, MemberFixture.member(2L, "parent"), "부모 댓글", 4);
             Comment reply = CommentFixture.replyComment(202L, post, parent, MemberFixture.member(1L, "me"), "대댓글", 1);
 
-            given(postService.getActivePostOrThrow(10L)).willReturn(post);
+            given(postRepository.findActiveById(10L)).willReturn(Optional.of(post));
             given(commentRepository.findActiveTopLevelByPostId(10L)).willReturn(List.of(parent));
             given(commentRepository.findActiveRepliesByPostId(10L)).willReturn(List.of(reply));
             given(commentLikeRepository.findLikedCommentIds(1L, List.of(201L, 202L)))
@@ -106,8 +106,8 @@ class CommentServiceTest {
             Comment parent = CommentFixture.topLevelComment(201L, post, MemberFixture.member(2L, "parent"), "부모 댓글", 0);
             CreateCommentRequest request = new CreateCommentRequest(201L, "대댓글");
 
-            given(postService.getActivePostOrThrow(10L)).willReturn(post);
-            given(memberService.findMemberOrThrow(1L)).willReturn(author);
+            given(postRepository.findActiveById(10L)).willReturn(Optional.of(post));
+            given(memberRepository.findById(1L)).willReturn(Optional.of(author));
             given(commentRepository.findActiveById(201L)).willReturn(Optional.of(parent));
             given(commentRepository.save(org.mockito.ArgumentMatchers.any(Comment.class)))
                     .willAnswer(invocation -> {
@@ -133,11 +133,12 @@ class CommentServiceTest {
             Post post = PostFixture.post(10L);
             Member author = MemberFixture.member(1L, "writer");
             Comment parent = CommentFixture.topLevelComment(201L, post, MemberFixture.member(2L, "parent"), "부모 댓글", 0);
-            Comment reply = CommentFixture.replyComment(202L, post, parent, MemberFixture.member(3L, "child"), "대댓글", 0);
+            Comment reply = CommentFixture.replyComment(202L, post, parent, MemberFixture.member(3L, "child"), "대댓글",
+                    0);
             CreateCommentRequest request = new CreateCommentRequest(202L, "대대댓글");
 
-            given(postService.getActivePostOrThrow(10L)).willReturn(post);
-            given(memberService.findMemberOrThrow(1L)).willReturn(author);
+            given(postRepository.findActiveById(10L)).willReturn(Optional.of(post));
+            given(memberRepository.findById(1L)).willReturn(Optional.of(author));
             given(commentRepository.findActiveById(202L)).willReturn(Optional.of(reply));
 
             // when & then
@@ -222,7 +223,8 @@ class CommentServiceTest {
             // given
             // 작성자(1L)가 자신의 댓글을 수정하는 상황을 준비한다.
             Post post = PostFixture.post(10L);
-            Comment comment = CommentFixture.topLevelComment(201L, post, MemberFixture.member(1L, "writer"), "기존 내용", 0);
+            Comment comment = CommentFixture.topLevelComment(201L, post, MemberFixture.member(1L, "writer"), "기존 내용",
+                    0);
             given(commentRepository.findActiveById(201L)).willReturn(Optional.of(comment));
 
             // when
@@ -240,7 +242,8 @@ class CommentServiceTest {
             // given
             // 타인(2L)이 작성자(1L)의 댓글을 수정하려는 상황을 준비한다.
             Post post = PostFixture.post(10L);
-            Comment comment = CommentFixture.topLevelComment(201L, post, MemberFixture.member(1L, "writer"), "기존 내용", 0);
+            Comment comment = CommentFixture.topLevelComment(201L, post, MemberFixture.member(1L, "writer"), "기존 내용",
+                    0);
             given(commentRepository.findActiveById(201L)).willReturn(Optional.of(comment));
 
             // when & then
@@ -287,7 +290,8 @@ class CommentServiceTest {
             // 대댓글(reply)인 댓글을 준비한다.
             Post post = PostFixture.post(10L);
             Comment parent = CommentFixture.topLevelComment(201L, post, MemberFixture.member(2L, "parent"), "부모 댓글", 0);
-            Comment reply = CommentFixture.replyComment(202L, post, parent, MemberFixture.member(1L, "writer"), "대댓글", 0);
+            Comment reply = CommentFixture.replyComment(202L, post, parent, MemberFixture.member(1L, "writer"), "대댓글",
+                    0);
             given(commentRepository.findActiveById(202L)).willReturn(Optional.of(reply));
 
             // when

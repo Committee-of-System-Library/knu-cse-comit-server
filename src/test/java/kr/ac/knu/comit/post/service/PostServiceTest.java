@@ -3,6 +3,7 @@ package kr.ac.knu.comit.post.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -12,22 +13,28 @@ import static org.mockito.Mockito.never;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import kr.ac.knu.comit.comment.service.CommentQueryService;
+import kr.ac.knu.comit.comment.domain.CommentRepository;
+import kr.ac.knu.comit.fixture.MemberFixture;
 import kr.ac.knu.comit.fixture.PostFixture;
 import kr.ac.knu.comit.global.exception.BusinessException;
+import kr.ac.knu.comit.global.exception.CommonErrorCode;
 import kr.ac.knu.comit.global.exception.PostErrorCode;
-import kr.ac.knu.comit.member.service.MemberService;
+import kr.ac.knu.comit.member.domain.MemberRepository;
+import kr.ac.knu.comit.post.domain.BoardType;
 import kr.ac.knu.comit.post.domain.Post;
 import kr.ac.knu.comit.post.domain.PostDailyVisitorRepository;
 import kr.ac.knu.comit.post.domain.PostImageRepository;
 import kr.ac.knu.comit.post.domain.PostLikeRepository;
 import kr.ac.knu.comit.post.domain.PostRepository;
+import kr.ac.knu.comit.post.dto.CreatePostRequest;
 import kr.ac.knu.comit.post.dto.HotPostListResponse;
+import kr.ac.knu.comit.post.dto.LikeToggleResponse;
 import kr.ac.knu.comit.post.dto.PostDetailResponse;
+import kr.ac.knu.comit.post.dto.UpdatePostRequest;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.Nested;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
@@ -35,17 +42,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Map;
-import kr.ac.knu.comit.fixture.MemberFixture;
-import kr.ac.knu.comit.global.exception.CommonErrorCode;
-import kr.ac.knu.comit.post.domain.BoardType;
-import kr.ac.knu.comit.post.dto.CreatePostRequest;
-import kr.ac.knu.comit.post.dto.LikeToggleResponse;
-import kr.ac.knu.comit.post.dto.PostCursorPageResponse;
-import kr.ac.knu.comit.post.dto.UpdatePostRequest;
-
-import static org.mockito.ArgumentMatchers.anyList;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -65,10 +61,10 @@ class PostServiceTest {
     private PostDailyVisitorRepository postDailyVisitorRepository;
 
     @Mock
-    private MemberService memberService;
+    private MemberRepository memberRepository;
 
     @Mock
-    private CommentQueryService commentQueryService;
+    private CommentRepository commentRepository;
 
     @Mock
     private ContentPreviewGenerator contentPreviewGenerator;
@@ -145,8 +141,8 @@ class PostServiceTest {
                 ));
         given(postRepository.findActiveWithMemberAndTagsByIds(List.of(20L, 10L)))
                 .willReturn(List.of(olderPost, newerPost));
-        given(commentQueryService.countActiveCommentsByPostIds(List.of(10L, 20L)))
-                .willReturn(java.util.Map.of(10L, 2, 20L, 4));
+        given(commentRepository.countActiveByPostIds(anyList()))
+                .willReturn(List.of(commentCount(10L, 2), commentCount(20L, 4)));
 
         // when
         // 인기글 목록 조회를 실행한다.
@@ -178,7 +174,36 @@ class PostServiceTest {
         // 빈 목록을 반환하고 추가 상세 조회는 일어나지 않아야 한다.
         assertThat(response.posts()).isEmpty();
         then(postRepository).should(never()).findActiveWithMemberAndTagsByIds(any());
-        then(commentQueryService).shouldHaveNoInteractions();
+        then(commentRepository).should(never()).countActiveByPostIds(any());
+    }
+
+    private PostRepository.HotPostScoreView hotPostScore(Long postId, long score) {
+        return new PostRepository.HotPostScoreView() {
+            @Override
+            public Long getPostId() {
+                return postId;
+            }
+
+            @Override
+            public long getScore() {
+                return score;
+            }
+        };
+    }
+
+    private CommentRepository.CommentCountView commentCount(Long postId, long count) {
+        return new CommentRepository.CommentCountView() {
+
+            @Override
+            public Long getPostId() {
+                return postId;
+            }
+
+            @Override
+            public long getCommentCount() {
+                return count;
+            }
+        };
     }
 
     @Nested
@@ -190,7 +215,7 @@ class PostServiceTest {
         void returnsPostIdAfterSaving() {
             // given
             // 게시글 작성자와 저장 후 ID를 준비한다.
-            given(memberService.findMemberOrThrow(1L)).willReturn(MemberFixture.member(1L));
+            given(memberRepository.findById(1L)).willReturn(Optional.of(MemberFixture.member(1L)));
             given(postRepository.save(any(Post.class))).willAnswer(invocation -> {
                 Post saved = invocation.getArgument(0);
                 ReflectionTestUtils.setField(saved, "id", 100L);
@@ -199,7 +224,8 @@ class PostServiceTest {
 
             // when
             // 게시글 생성을 실행한다.
-            Long postId = postService.createPost(1L, new CreatePostRequest(BoardType.QNA, "제목", "본문", List.of(), List.of()));
+            Long postId = postService.createPost(1L,
+                    new CreatePostRequest(BoardType.QNA, "제목", "본문", List.of(), List.of()));
 
             // then
             // 저장된 게시글 ID가 반환되어야 한다.
@@ -239,7 +265,8 @@ class PostServiceTest {
 
             // when & then
             // 소유권 검사에서 FORBIDDEN 예외가 발생해야 한다.
-            assertThatThrownBy(() -> postService.updatePost(1L, 10L, new UpdatePostRequest("새 제목", "새 본문", List.of(), List.of())))
+            assertThatThrownBy(
+                    () -> postService.updatePost(1L, 10L, new UpdatePostRequest("새 제목", "새 본문", List.of(), List.of())))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
                     .isEqualTo(CommonErrorCode.FORBIDDEN);
@@ -380,8 +407,7 @@ class PostServiceTest {
             // given
             // cursor가 null인 첫 페이지 조회 상황을 준비한다.
             given(postRepository.findFirstPage(eq(BoardType.QNA), any(Pageable.class))).willReturn(List.of());
-            given(commentQueryService.countActiveCommentsByPostIds(anyList())).willReturn(Map.of());
-
+            
             // when
             // size=100으로 첫 페이지 조회를 실행한다.
             postService.getPosts(BoardType.QNA, null, 100);
@@ -392,19 +418,5 @@ class PostServiceTest {
             then(postRepository).should().findFirstPage(eq(BoardType.QNA), captor.capture());
             assertThat(captor.getValue().getPageSize()).isEqualTo(21);
         }
-    }
-
-    private PostRepository.HotPostScoreView hotPostScore(Long postId, long score) {
-        return new PostRepository.HotPostScoreView() {
-            @Override
-            public Long getPostId() {
-                return postId;
-            }
-
-            @Override
-            public long getScore() {
-                return score;
-            }
-        };
     }
 }
