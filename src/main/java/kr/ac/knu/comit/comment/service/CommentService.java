@@ -67,6 +67,7 @@ public class CommentService {
         );
     }
 
+    @Transactional
     public Long createComment(Long postId, Long memberId, CreateCommentRequest request) {
         Post post = findActivePostOrThrow(postId);
         Member author = findMemberOrThrow(memberId);

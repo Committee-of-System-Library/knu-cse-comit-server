@@ -33,6 +33,7 @@ public class ReportService {
         return createReport(memberId, ReportTargetType.POST, postId, message);
     }
 
+    @Transactional
     public Long reportComment(Long commentId, Long memberId, String message) {
         commentQueryService.getActiveCommentOrThrow(commentId);
 
