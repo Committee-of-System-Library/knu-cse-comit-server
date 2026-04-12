@@ -13,6 +13,7 @@
 | `java-comment-convention.md` | `@apiNote`, `@implNote` 기반 Java 주석 규칙 |
 | `sso-auth-flow.md` | Comit SSO 로그인, callback, 쿠키 인증, 프론트 연동 흐름 |
 | `testing-strategy.md` | 테스트 층, 네이밍, fixture, `given/when/then` 작성 기준 |
+| `transaction-convention.md` | `@Transactional` 선언 기준, 금지 패턴, 케이스별 판단 기준 |
 
 ## 작성 원칙
 
