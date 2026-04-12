@@ -7,7 +7,6 @@ import kr.ac.knu.comit.auth.dto.SsoCallbackRejected;
 import kr.ac.knu.comit.auth.dto.SsoCallbackResult;
 import kr.ac.knu.comit.auth.dto.SsoCallbackSuccess;
 import kr.ac.knu.comit.auth.dto.SsoLoginStart;
-import kr.ac.knu.comit.auth.service.AuthCookieManager;
 import kr.ac.knu.comit.auth.service.SsoAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

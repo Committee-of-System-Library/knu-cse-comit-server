@@ -3,6 +3,7 @@ package kr.ac.knu.comit.auth.service;
 import java.net.URI;
 import java.util.UUID;
 import kr.ac.knu.comit.auth.config.ComitSsoProperties;
+import kr.ac.knu.comit.auth.controller.AuthCookieManager;
 import kr.ac.knu.comit.auth.dto.SsoCallbackPendingRegistration;
 import kr.ac.knu.comit.auth.dto.SsoCallbackRejected;
 import kr.ac.knu.comit.auth.dto.SsoCallbackResult;

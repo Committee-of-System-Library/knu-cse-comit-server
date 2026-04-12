@@ -28,6 +28,7 @@ public class AdminPostService {
     private final PostRepository postRepository;
     private final MemberService memberService;
 
+    @Transactional
     public AdminCreatePostResponse createPost(Long adminMemberId, AdminCreatePostRequest request) {
         if (!ADMIN_ONLY_BOARD_TYPES.contains(request.boardType())) {
             throw new BusinessException(PostErrorCode.FORBIDDEN_BOARD_TYPE);

@@ -1,4 +1,4 @@
-package kr.ac.knu.comit.auth.service;
+package kr.ac.knu.comit.auth.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import kr.ac.knu.comit.auth.controller.api.RegisterControllerApi;
 import kr.ac.knu.comit.auth.dto.RegisterPrefillResponse;
 import kr.ac.knu.comit.auth.dto.RegisterRequest;
-import kr.ac.knu.comit.auth.service.AuthCookieManager;
 import kr.ac.knu.comit.auth.service.RegisterService;
 import kr.ac.knu.comit.global.exception.ApiResponse;
 import lombok.RequiredArgsConstructor;

@@ -16,11 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 import java.util.Optional;
 import kr.ac.knu.comit.auth.config.ComitSsoProperties;
+import kr.ac.knu.comit.auth.controller.AuthCookieManager;
 import kr.ac.knu.comit.auth.controller.RegisterController;
 import kr.ac.knu.comit.auth.controller.SsoAuthController;
 import kr.ac.knu.comit.auth.port.ExternalAuthClient;
 import kr.ac.knu.comit.auth.port.ExternalIdentity;
-import kr.ac.knu.comit.auth.service.AuthCookieManager;
 import kr.ac.knu.comit.auth.service.ExternalIdentityMapper;
 import kr.ac.knu.comit.auth.service.RegisterService;
 import kr.ac.knu.comit.auth.service.SsoAuthService;
@@ -110,7 +110,8 @@ class SsoAuthWebTest {
         // when
         MvcResult result = mockMvc.perform(get("/auth/sso/login"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
+                .andExpect(header().string("Location",
+                        org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
                 .andReturn();
 
         // then
@@ -125,12 +126,14 @@ class SsoAuthWebTest {
         MvcResult result = mockMvc.perform(get("/auth/sso/login")
                         .param("redirectUri", "https://comit-sso-smoke.vercel.app"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
+                .andExpect(header().string("Location",
+                        org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
                 .andReturn();
 
         // then
         assertThat(result.getResponse().getHeaders("Set-Cookie"))
-                .anySatisfy(cookie -> assertThat(cookie).contains("comit-redirect-uri=https://comit-sso-smoke.vercel.app"));
+                .anySatisfy(
+                        cookie -> assertThat(cookie).contains("comit-redirect-uri=https://comit-sso-smoke.vercel.app"));
     }
 
     @Test
@@ -140,7 +143,8 @@ class SsoAuthWebTest {
         MvcResult result = mockMvc.perform(get("/auth/sso/login")
                         .cookie(new jakarta.servlet.http.Cookie("comit-redirect-uri", "https://stale.example.com")))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
+                .andExpect(header().string("Location",
+                        org.hamcrest.Matchers.startsWith("https://chcse.knu.ac.kr/appfn/api/login?")))
                 .andReturn();
 
         // then
@@ -271,7 +275,8 @@ class SsoAuthWebTest {
                         .cookie(new jakarta.servlet.http.Cookie("COMIT_SSO_STATE", "state-123"))
                         .cookie(new jakarta.servlet.http.Cookie("comit-redirect-uri", "https://comit-sso-smoke.vercel.app")))
                 .andExpect(status().isFound())
-                .andExpect(redirectedUrl("https://comit-sso-smoke.vercel.app?stage=error&reason=EXTERNAL_USER_NOT_ALLOWED"))
+                .andExpect(redirectedUrl(
+                        "https://comit-sso-smoke.vercel.app?stage=error&reason=EXTERNAL_USER_NOT_ALLOWED"))
                 .andReturn();
 
         // then

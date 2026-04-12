@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.lenient;
 
 import java.util.List;
 import kr.ac.knu.comit.auth.config.ComitSsoProperties;
+import kr.ac.knu.comit.auth.controller.AuthCookieManager;
 import kr.ac.knu.comit.auth.dto.SsoCallbackPendingRegistration;
 import kr.ac.knu.comit.auth.dto.SsoCallbackRejected;
 import kr.ac.knu.comit.auth.dto.SsoCallbackResult;
@@ -31,12 +32,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("SsoAuthService")
 class SsoAuthServiceTest {
 
-    @Mock private ComitSsoProperties ssoProperties;
-    @Mock private ExternalAuthClient externalAuthClient;
-    @Mock private AuthCookieManager authCookieManager;
-    @Mock private ExternalIdentityMapper externalIdentityMapper;
-    @Mock private MemberService memberService;
-    @InjectMocks private SsoAuthService ssoAuthService;
+    @Mock
+    private ComitSsoProperties ssoProperties;
+    @Mock
+    private ExternalAuthClient externalAuthClient;
+    @Mock
+    private AuthCookieManager authCookieManager;
+    @Mock
+    private ExternalIdentityMapper externalIdentityMapper;
+    @Mock
+    private MemberService memberService;
+    @InjectMocks
+    private SsoAuthService ssoAuthService;
+
+    private void givenFrontendUrls() {
+        given(ssoProperties.getFrontendSuccessUrl()).willReturn("https://comit.knu.ac.kr/home");
+        given(ssoProperties.getFrontendRegisterUrl()).willReturn("https://comit.knu.ac.kr/register");
+        given(ssoProperties.getFrontendErrorUrl()).willReturn("https://comit.knu.ac.kr/error");
+        lenient().when(ssoProperties.getAllowedRedirectUris())
+                .thenReturn(List.of("https://comit-sso-smoke.vercel.app"));
+        lenient().when(memberService.hasDeletedMember("sub-1")).thenReturn(false);
+    }
 
     @Nested
     @DisplayName("startLogin")
@@ -198,7 +214,8 @@ class SsoAuthServiceTest {
             // then
             assertThat(result).isInstanceOf(SsoCallbackPendingRegistration.class);
             SsoCallbackPendingRegistration pendingRegistration = (SsoCallbackPendingRegistration) result;
-            assertThat(pendingRegistration.redirectUrl()).isEqualTo("https://comit-sso-smoke.vercel.app?stage=register");
+            assertThat(pendingRegistration.redirectUrl()).isEqualTo(
+                    "https://comit-sso-smoke.vercel.app?stage=register");
             assertThat(pendingRegistration.tokenCookie()).isEqualTo("Set-Cookie: token=abc");
             assertThat(pendingRegistration.clearRedirectUriCookieHeader())
                     .isEqualTo("Set-Cookie: comit-redirect-uri=; Max-Age=0");
@@ -311,14 +328,5 @@ class SsoAuthServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(CommonErrorCode.INVALID_REQUEST);
         }
-    }
-
-    private void givenFrontendUrls() {
-        given(ssoProperties.getFrontendSuccessUrl()).willReturn("https://comit.knu.ac.kr/home");
-        given(ssoProperties.getFrontendRegisterUrl()).willReturn("https://comit.knu.ac.kr/register");
-        given(ssoProperties.getFrontendErrorUrl()).willReturn("https://comit.knu.ac.kr/error");
-        lenient().when(ssoProperties.getAllowedRedirectUris())
-                .thenReturn(List.of("https://comit-sso-smoke.vercel.app"));
-        lenient().when(memberService.hasDeletedMember("sub-1")).thenReturn(false);
     }
 }
