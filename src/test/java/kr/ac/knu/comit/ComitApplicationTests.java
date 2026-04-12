@@ -1,7 +1,6 @@
 package kr.ac.knu.comit;
 
 import kr.ac.knu.comit.comment.service.AdminCommentService;
-import kr.ac.knu.comit.comment.service.CommentQueryService;
 import kr.ac.knu.comit.comment.service.CommentService;
 import kr.ac.knu.comit.member.domain.MemberRepository;
 import kr.ac.knu.comit.member.service.AdminMemberService;
