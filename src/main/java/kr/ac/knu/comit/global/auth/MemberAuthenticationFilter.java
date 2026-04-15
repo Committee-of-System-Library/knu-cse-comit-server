@@ -11,6 +11,7 @@ import kr.ac.knu.comit.global.exception.MemberErrorCode;
 import kr.ac.knu.comit.member.domain.Member;
 import kr.ac.knu.comit.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Component
 @ConditionalOnProperty(prefix = "comit.auth.bridge", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
+@Slf4j
 public class MemberAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String SUB_HEADER = "X-Member-Sub";
@@ -71,6 +73,13 @@ public class MemberAuthenticationFilter extends OncePerRequestFilter {
             if (member.isSuspended()) {
                 throw new BusinessException(MemberErrorCode.MEMBER_SUSPENDED);
             }
+            
+            kr.ac.knu.comit.member.domain.ComitRole dbRole = member.getComitRole();
+            MemberPrincipal.MemberRole finalRole = toMemberRole(dbRole);
+            
+            log.info("[MemberAuthenticationFilter] ssoSub={}, memberId={}, dbComitRole={}, finalRole={}, requestPath={}", 
+                ssoSub, member.getId(), dbRole, finalRole, request.getRequestURI());
+            
             MemberPrincipal authenticatedPrincipal = new MemberPrincipal(
                     member.getId(),
                     member.getSsoSub(),
@@ -78,7 +87,7 @@ public class MemberAuthenticationFilter extends OncePerRequestFilter {
                     provisionalPrincipal.email(),
                     provisionalPrincipal.studentNumber(),
                     provisionalPrincipal.userType(),
-                    toMemberRole(member.getComitRole())
+                    finalRole
             );
 
             request.setAttribute(MemberArgumentResolver.PRINCIPAL_ATTRIBUTE, authenticatedPrincipal);
