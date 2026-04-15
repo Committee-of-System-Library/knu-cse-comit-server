@@ -49,7 +49,7 @@ public class Member {
     private MemberStatus status = MemberStatus.ACTIVE;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "comit_role", nullable = false, length = 20)
     private ComitRole comitRole = ComitRole.STUDENT;
 
     private LocalDateTime suspendedUntil;
