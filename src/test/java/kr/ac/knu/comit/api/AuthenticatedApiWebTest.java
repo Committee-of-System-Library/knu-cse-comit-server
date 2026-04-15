@@ -511,6 +511,19 @@ class AuthenticatedApiWebTest {
     }
 
     @Test
+    void returnsForbiddenWhenHeaderSaysAdminButDbRoleIsStudent() throws Exception {
+        // when & then
+        // 헤더 role이 ADMIN이어도 DB role이 STUDENT면 관리자 API 접근은 거부되어야 한다.
+        mockMvc.perform(get("/admin/reports")
+                        .header("X-Member-Sub", "member-1")
+                        .header("X-Member-Name", "student")
+                        .header("X-Member-Role", "ADMIN"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/common/forbidden"))
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+    }
+
+    @Test
     void returnsForbiddenWhenNonAdminRequestsAdminMemberList() throws Exception {
         // when & then
         // 관리자 권한이 아니면 회원 관리자 API 접근이 거부되어야 한다.
